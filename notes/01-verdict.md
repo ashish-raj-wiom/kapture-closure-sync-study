@@ -120,3 +120,31 @@ Two things to spin out rather than fold in:
 1. **The 36 never-close-in-app CSPs** — separate diagnosis.
 2. **The dead `RATING` / `TICKET_COMMENTS` connectors** — blocks CSAT measurement platform-wide,
    not just here.
+
+---
+
+## Worked examples — the sync-loss population, spot-checked
+
+`queries/spot-check-sync-loss.sql`. Five consecutive sync-loss tickets from 12 Aug 2026. All
+times IST.
+
+| Ticket | CSP | Created | TAT deadline | Agent closed in Kapture | CSP marked | Lag | Scored |
+|---|---|---|---|---|---|---|---|
+| 1786508079949000 | a0b6v6 | 09:17 | 15:00 | **09:20** (3 min after creation) | 16:59 | 7.7 h | breached |
+| 1786510713537000 | a0b6p4 | 10:02 | 15:00 | 14:42 | 15:12 | 0.5 h | breached |
+| 1786514943031000 | a0b7d5 | 11:37 | 15:37 | **11:38** (1 min after creation) | 15:52 | 4.2 h | breached |
+| 1786531289988000 | a0b9e7 | 15:51 | 19:51 | 16:05 | 13 Aug 14:05 | 22.0 h | breached |
+| 1786535043353000 | a0b7i8 | 16:59 | 20:59 | 17:24 | 13 Aug 19:17 | 25.9 h | breached |
+
+All five: SRS `STATUS = CLOSED`, `WITHIN_TAT = 0`, ledger `RESOLVED_WITHIN_TAT = false`,
+`EXCLUDED_FROM_SCORING = false`.
+
+Row 1 and row 3 are the cases to put in front of anyone who doubts the problem exists: the
+customer's issue was confirmed fixed **within three minutes and one minute** of the ticket being
+raised, and the CSP is recorded as having breached a four-hour deadline. Row 2 is the near-miss —
+the agent closed 18 minutes before the deadline, the CSP marked 12 minutes after it.
+
+Note what these five also show, and why the headline is 535 and not 5,526: the agent's closure is
+very often *immediate* (the customer called back to say it was already fine). That is a closure
+the CSP legitimately earned and lost on a technicality. It is not the same as the 61.9% of cases
+where the agent closed a ticket that had already been late for hours.

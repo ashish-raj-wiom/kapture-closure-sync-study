@@ -253,7 +253,39 @@
 </section>
 
 <section class="sec">
-  <div class="sec-head"><span class="sec-num">05</span><h2>What this measurement cannot tell you</h2></div>
+  <div class="sec-head"><span class="sec-num">05</span><h2>What it looks like on one ticket</h2></div>
+
+  <p class="lede">Five consecutive sync-loss tickets from 12 Aug 2026, spot-checked end to end.
+  All times IST. All five carry SRS <code>STATUS = CLOSED</code>,
+  <code>WITHIN_TAT = 0</code>, ledger <code>RESOLVED_WITHIN_TAT = false</code> and
+  <code>EXCLUDED_FROM_SCORING = false</code>.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Ticket</th><th>CSP</th><th>Raised</th><th>TAT deadline</th><th>Agent closed it</th><th>CSP marked it</th><th>Lag</th></tr></thead>
+    <tbody>
+      <tr class="hi"><td class="num">1786508079949000</td><td>a0b6v6</td><td class="num">09:17</td><td class="num">15:00</td><td class="num"><b>09:20</b> &mdash; 3 min later</td><td class="num">16:59</td><td class="num">7.7 h</td></tr>
+      <tr><td class="num">1786510713537000</td><td>a0b6p4</td><td class="num">10:02</td><td class="num">15:00</td><td class="num">14:42</td><td class="num">15:12</td><td class="num">0.5 h</td></tr>
+      <tr class="hi"><td class="num">1786514943031000</td><td>a0b7d5</td><td class="num">11:37</td><td class="num">15:37</td><td class="num"><b>11:38</b> &mdash; 1 min later</td><td class="num">15:52</td><td class="num">4.2 h</td></tr>
+      <tr><td class="num">1786531289988000</td><td>a0b9e7</td><td class="num">15:51</td><td class="num">19:51</td><td class="num">16:05</td><td class="num">13 Aug 14:05</td><td class="num">22.0 h</td></tr>
+      <tr><td class="num">1786535043353000</td><td>a0b7i8</td><td class="num">16:59</td><td class="num">20:59</td><td class="num">17:24</td><td class="num">13 Aug 19:17</td><td class="num">25.9 h</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p class="note warn"><b>Rows 1 and 3 are the argument.</b> The customer's issue was confirmed
+  fixed <b>three minutes</b> and <b>one minute</b> after the ticket was raised &mdash; and the CSP
+  is on record as having breached a four-hour deadline. Row 2 is the near-miss: the agent closed
+  18 minutes before the deadline, the CSP marked it 12 minutes after.</p>
+
+  <p class="lede">These also show why the headline number is 535 and not 5,526. The agent's closure
+  is often immediate, because the customer rang back to say it was already fine &mdash; a closure
+  the CSP earned and lost on a technicality. That is a different case from the <b>61.9%</b> where
+  the agent closed a ticket that had already been late for hours.</p>
+</section>
+
+<section class="sec">
+  <div class="sec-head"><span class="sec-num">06</span><h2>What this measurement cannot tell you</h2></div>
   <ul>
     <li><b>Nothing before mid-July 2026.</b> The closing actor is identified by two sentinel ids
       (<code>1234567890</code> = CSP/SRS path, <code>137439087976</code> = Kapture webhook) that
