@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapture Closure Sync — PRD v0.1</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #fafaf9; --surface: #ffffff; --ink: #1a1a1a; --muted: #6b6b6b; --rule: #e5e5e2;
+    --core: #0b6b3a; --core-bg: #e9f5ee;
+    --cond: #8a5a00; --cond-bg: #fbf1dd;
+    --what: #1f3c6e; --what-bg: #e8eef8;
+    --how: #5b2a86; --how-bg: #efe6f7;
+    --example-bg: #fffbeb; --example-rule: #f3d56a; --example-ink: #78350f;
+    --required: #b91c1c; --required-bg: #fee2e2;
+    --illustrative: #6b7280; --illustrative-bg: #f1f3f5;
+    --quickcheck-bg: #fef9c3; --quickcheck-rule: #ca8a04; --quickcheck-ink: #713f12;
+    --hint-bg: #ecfeff; --hint-rule: #0e7490; --hint-ink: #155e75;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; line-height: 1.55; color: var(--ink); background: var(--bg);
+  }
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+  nav.toc {
+    position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto;
+    padding: 24px 18px; border-right: 1px solid var(--rule); background: var(--surface); font-size: 13px;
+  }
+  nav.toc h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 18px 0 6px; }
+  nav.toc h2:first-of-type { margin-top: 0; }
+  nav.toc h2.qc { color: var(--quickcheck-ink); border-left: 3px solid var(--quickcheck-rule); padding-left: 8px; }
+  nav.toc h2.what { color: var(--what); border-left: 3px solid var(--what); padding-left: 8px; }
+  nav.toc h2.how { color: var(--how); border-left: 3px solid var(--how); padding-left: 8px; }
+  nav.toc h2.close { color: var(--muted); border-left: 3px solid var(--muted); padding-left: 8px; }
+  nav.toc ol { list-style: none; padding: 0; margin: 0; }
+  nav.toc li { margin: 4px 0; }
+  nav.toc li a { text-decoration: none; color: var(--ink); display: flex; gap: 8px; align-items: baseline; padding: 4px 6px; border-radius: 4px; font-size: 12.5px; }
+  nav.toc li a:hover { background: var(--bg); }
+  nav.toc li a .ix { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 32px; font-weight: 600; }
+
+  main { padding: 40px 56px 120px; max-width: 1080px; }
+  header.doc { border-bottom: 2px solid var(--ink); padding-bottom: 20px; margin-bottom: 32px; }
+  header.doc .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  header.doc h1 { font-size: 30px; margin: 6px 0 8px; line-height: 1.2; }
+  header.doc p.lede { color: var(--muted); font-size: 15px; margin: 0; max-width: 75ch; }
+  header.doc .meta-row { display: flex; gap: 24px; margin-top: 14px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+
+  .convention { margin-top: 14px; padding: 12px 14px; background: var(--bg); border: 1px dashed var(--rule); border-radius: 5px; font-size: 13px; }
+  .convention strong { font-weight: 700; }
+  .convention .badge { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin: 0 4px; vertical-align: middle; }
+  .badge.req { background: var(--required-bg); color: var(--required); }
+  .badge.ill { background: var(--illustrative-bg); color: var(--illustrative); }
+
+  .quickcheck {
+    margin: 28px 0 40px; background: var(--quickcheck-bg);
+    border: 1px solid var(--quickcheck-rule); border-left: 5px solid var(--quickcheck-rule);
+    border-radius: 6px; padding: 18px 22px;
+  }
+  .quickcheck h2 { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--quickcheck-ink); }
+  .quickcheck .qc-tag { font-size: 11px; color: var(--quickcheck-ink); opacity: 0.9; margin-bottom: 12px; }
+  .quickcheck dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; font-size: 14px; }
+  .quickcheck dt { font-weight: 600; color: var(--quickcheck-ink); }
+  .quickcheck dd { margin: 0; color: var(--ink); }
+
+  .part-divider { margin: 56px 0 32px; padding: 28px 32px; border-radius: 8px; color: white; }
+  .part-divider.what { background: var(--what); }
+  .part-divider.how { background: var(--how); }
+  .part-divider .label { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.8; }
+  .part-divider h2 { font-size: 28px; margin: 4px 0 6px; }
+  .part-divider p { margin: 0; font-size: 14px; opacity: 0.92; max-width: 75ch; }
+  .part-divider .author-note { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.25); font-size: 13px; font-style: italic; opacity: 0.92; }
+
+  section.spec { margin: 40px 0; scroll-margin-top: 24px; }
+  section.spec h2 { font-size: 21px; margin: 0 0 6px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  section.spec h2 .num { color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+  section.spec h3 { font-size: 15px; margin: 16px 0 4px; }
+  .tier { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 3px; font-weight: 600; }
+  .tier.core { background: var(--core-bg); color: var(--core); }
+  .tier.cond { background: var(--cond-bg); color: var(--cond); }
+  .tier.what { background: var(--what-bg); color: var(--what); }
+  .tier.how { background: var(--how-bg); color: var(--how); }
+
+  .expected { background: #f4f4f2; border-left: 3px solid var(--ink); padding: 10px 14px; font-size: 13px; margin: 10px 0 14px; color: #333; }
+  .expected strong { font-weight: 700; }
+  .hint { background: var(--hint-bg); border-left: 3px solid var(--hint-rule); padding: 8px 14px; font-size: 13px; margin: 8px 0 14px; color: var(--hint-ink); border-radius: 4px; }
+  .hint strong { color: var(--hint-ink); }
+
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 14px; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border: 1px solid var(--rule); vertical-align: top; }
+  th { background: var(--bg); font-weight: 600; }
+
+  .mermaid { background: var(--surface); border: 1px solid var(--rule); border-radius: 5px; padding: 14px; margin: 14px 0; text-align: center; overflow-x: auto; }
+
+  .design-note { background: #fff7ed; border: 1px solid #fed7aa; border-left: 3px solid #c2410c; padding: 10px 14px; margin: 14px 0; font-size: 13px; border-radius: 5px; }
+  .design-note strong { color: #9a3412; }
+
+  ul.criteria { padding-left: 20px; }
+  ul.criteria li { margin: 6px 0; }
+
+  .gherkin { background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--core); padding: 12px 14px; margin: 10px 0; font-size: 13.5px; }
+  .gherkin .kw { font-weight: 700; color: var(--core); }
+  .gherkin .scenario { display: block; color: var(--muted); font-style: italic; margin: 4px 0 8px; font-size: 13px; }
+  .gherkin .verify { margin-top: 10px; padding: 8px 12px; background: #fef9c3; border: 1px solid #fde047; border-radius: 4px; font-size: 12.5px; color: #713f12; }
+  .gherkin .verify strong.v-label { color: #92400e; }
+  .gherkin .verify ul { margin: 4px 0 0 0; padding-left: 18px; }
+  .gherkin .verify li { margin: 3px 0; line-height: 1.5; }
+  .gherkin .verify code { background: rgba(255,255,255,0.7); padding: 0.05em 0.3em; border-radius: 3px; font-size: 0.9em; }
+
+  hr.sect-end { border: none; border-top: 1px dashed var(--rule); margin: 32px 0 0; }
+
+  footer.checklist { margin-top: 60px; padding-top: 30px; border-top: 2px solid var(--ink); }
+  footer.checklist h2 { font-size: 20px; margin-top: 0; }
+  footer.checklist table { font-size: 13.5px; }
+  footer.checklist td.part-cell { width: 70px; }
+  footer.checklist td.tier-cell { width: 90px; }
+  footer.checklist td.check { width: 80px; text-align: center; font-family: monospace; }
+  footer.note { margin-top: 24px; padding: 14px; background: var(--bg); border-left: 3px solid var(--ink); font-size: 13px; }
+
+  @media print {
+    nav.toc { display: none; }
+    .layout { grid-template-columns: 1fr; }
+    main { padding: 20px; max-width: none; }
+    section.spec, .part-divider, .quickcheck { page-break-inside: avoid; }
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--rule); }
+    main { padding: 24px; }
+  }
+  tr.open-row td { background: var(--required-bg); }
+  tr.open-row td:last-child { color: var(--required); font-weight: 600; }
+  pre code { display:block; padding:12px 14px; background:#f6f6f4; border:1px solid var(--rule); border-radius:6px; overflow-x:auto; font-size:12.5px; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc" aria-label="Table of contents">
+  <h2 class="what">Requirements — what &amp; why</h2>
+  <ol>
+    <li><a href="#s1"><span class="ix">§1.</span>Objective &amp; Guardrails</a></li>
+    <li><a href="#s2"><span class="ix">§2.</span>Stories, Rules &amp; Acceptance Criteria</a></li>
+  </ol>
+  <h2 class="how">Behaviour &amp; detail</h2>
+  <ol>
+    <li><a href="#s3"><span class="ix">§3.</span>System Behaviour</a></li>
+    <li><a href="#s4"><span class="ix">§4.</span>Cross-cutting Acceptance Criteria</a></li>
+    <li><a href="#s5"><span class="ix">§5.</span>Configurability</a></li>
+    <li><a href="#s6"><span class="ix">§6.</span>Impacted Systems &amp; References</a></li>
+    <li><a href="#s7"><span class="ix">§7.</span>Glossary</a></li>
+    <li><a href="#s8"><span class="ix">§8.</span>Notes for System Capabilities</a></li>
+  </ol>
+  <h2 class="close">Closeout</h2>
+  <ol>
+    <li><a href="#ai-generated-content-for-review"><span class="ix">—</span>AI-generated content for review</a></li>
+    <li><a href="#not-asked"><span class="ix">—</span>Not asked</a></li>
+    <li><a href="#overrides"><span class="ix">—</span>Overrides</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<header class="doc">
+  <div class="eyebrow">Wiom · Product Requirements Document · PM deliverable</div>
+  <h1>Kapture Closure Sync — closure reaches the CSP's card</h1>
+  <p class="lede">A CSP whose customer's fault Wiom has already closed learns it at once, is never sent to work a job that no longer exists, and is never marked late for a fault that was fixed on time.</p>
+<table><tr><td><strong>Owner</strong> — Ashish Raj (PM)</td><td><strong>Reviewer</strong> — [TBD — not asked]</td><td><strong>Status</strong> — Draft</td><td><strong>Sign-off</strong> — Pending</td></tr><tr><td><strong>Version</strong> — v0.1 · 17 Sep 2026</td><td><strong>Consulted — Quality OS</strong> — Akhil</td><td><strong>Consulted — Support/Ops</strong> — [TBD — not asked]</td><td><strong>Consulted — TAS eng</strong> — [TBD — not asked]</td></tr></table>
+</header>
+
+<aside class="quickcheck" id="quickcheck" aria-label="Quick check summary">
+  <h2>Quick Check</h2>
+  <p><strong>Draft</strong> — 38 acceptance criteria, of which <strong>6 are OPEN</strong>;
+  8 transitions; 4 parameters.</p>
+  <p>Every OPEN item turns on one conflict: the card is meant to stay in the feed until the CSP
+  acknowledges it, but the platform already moves a resolved card to the archive on age alone at
+  C-01 (7 days) and drops it at C-02 (30 days). Settle that and the document closes.</p>
+  <p>Sizing, method and the queries behind every number:
+  <a href="../">the closure-sync study</a>. Decisions and what was rejected:
+  <a href="../Kapture_Closure_Sync_Tradeoffs.md">the tradeoffs register</a>.</p>
+</aside>
+<div class="part-divider what">
+  <div class="label">Requirements</div>
+  <h2>WHAT &amp; WHY — the decisions</h2>
+</div>
+
+<section class="spec" id="s1">
+  <h2><span class="num">§1.</span> Objective &amp; Guardrails <span class="tier what">WHAT</span></h2>
+<p><strong>Objective.</strong> A CSP whose customer's fault Wiom has already closed learns it at once, is never sent to work a job that no longer exists, and is never marked late for a fault that was fixed on time.</p>
+<p><strong>Boundary.</strong> This spec governs a <strong>Kapture-side closure of a partner-assigned Internet Issues ticket that still has a live SRS complaint</strong> — the path that today reaches Ticket Service Java and stops there. It leaves unchanged: the CSP-initiated resolution path, which already works and reaches Kapture in about one second (AC-REG-1); the SHIFTING task family, which keeps today's behaviour entirely (AC-REG-2); the reopen model, where a reopened ticket still creates a fresh complaint with a fresh deadline (AC-REG-3); and the connectivity-check verification path, which this spec neither calls nor changes (AC-REG-4).</p>
+<h3>Guardrails — promises that hold on every path</h3>
+<table><tr><th>ID</th><th>Guardrail</th><th>One line</th><th>Anchors</th></tr><tr><td>G1</td><td><strong>Never late for work done on time</strong> (zero tolerance)</td><td>A CSP is never recorded as breaching a deadline for a fault Wiom closed before that deadline.</td><td>R1 · R5 · AC-R5-1 · AC-GRD-1</td></tr><tr><td>G2</td><td><strong>A closed fault asks for nothing</strong></td><td>Once the complaint is resolved, the card offers no action that sends the CSP or a technician to the site.</td><td>R2 · AC-R2-2 · AC-GRD-2</td></tr><tr><td>G3</td><td><strong>No complaint outlives its ticket</strong></td><td>When Kapture closes the ticket, the complaint reaches a terminal state without waiting for the CSP.</td><td>R1 · AC-R1-1 · AC-GRD-3</td></tr><tr><td>G4</td><td><strong>One fault, one resolution</strong></td><td>A single fault produces one complaint resolution and one Quality signal, however many times the closure is delivered.</td><td>R1 · AC-DUP-1 · AC-GRD-4</td></tr></table>
+  <hr class="sect-end">
+</section>
+
+<section class="spec" id="s2">
+  <h2><span class="num">§2.</span> Stories, Rules &amp; Acceptance Criteria <span class="tier what">WHAT</span></h2>
+<h3>R1 — A Kapture closure resolves the complaint</h3>
+<table><tr><th>ID</th><th>Story</th><th>MUST</th><th>MUST NOT</th></tr><tr><td>R1</td><td>As a CSP, when Wiom has already closed my customer's ticket, I want the complaint closed on my behalf so that my card and my deadline stop, without me doing anything.</td><td><strong>(a)</strong> On a Kapture-side closure of a partner-assigned Internet Issues ticket, resolve the open complaint, stamping the resolution at the moment the agent closed it in Kapture. <strong>(b)</strong> Resolve the matching restore execution candidate, to the same end state a CSP's own resolve produces. <strong>(c)</strong> Attribute the resolution to the CSP who held the card. <strong>(d)</strong> Emit exactly one resolution signal for the fault. ⚠️ <em>AI GENERATED — review</em>.</td><td>Resolve a complaint whose ticket was not closed in Kapture; resolve a second time when the closure is delivered again; leave the complaint open once the closure has been accepted.</td></tr></table>
+<table><tr><th>AC</th><th>Given / When / Then</th><th>Verifies</th><th>Status</th></tr><tr><td>AC-R1-1</td><td><strong>Given</strong> ticket 1786508079949000, complaint status <code>INTAKE</code>, <code>sla_at</code> = 2026-08-12T15:00 IST, and restore candidate state <code>PENDING_ACCEPTANCE</code>, <strong>When</strong> a Wiom agent closes that ticket in Kapture at 09:20:23 IST on 12 Aug, <strong>Then</strong> the complaint row reads <code>status</code> = CLOSED and <code>resolved_at</code> = 2026-08-12T09:20:23 IST, and the restore candidate reads <code>state</code> = COMPLETED.</td><td>R1a · R1b · G3</td><td>Settled</td></tr><tr><td>AC-R1-2</td><td><strong>Given</strong> the closure in AC-R1-1, <strong>When</strong> the Wiom agent's closure is accepted at 09:20:23, <strong>Then</strong> the candidate reads <code>resolved_by_actor_type</code> = CSP and <code>resolved_by_actor_id</code> = a0b6v6, the CSP who held the card — not a Wiom or system identity.</td><td>R1c</td><td>Settled</td></tr><tr><td>AC-R1-4</td><td><strong>Given</strong> the closure in AC-R1-1, <strong>When</strong> it is accepted at 09:20:23, <strong>Then</strong> exactly one resolution signal exists for complaint of ticket 1786508079949000, and <code>signal_emitted</code> reads true once.</td><td>R1d · G4</td><td>Settled</td></tr><tr><td>AC-R1-3</td><td><strong>Given</strong> a ticket on the Wiom Net queue with <code>is_partnerassigned</code> = 0 and no row in <code>COMPLAINTS</code> for its <code>ticket_id</code>, <strong>When</strong> a Wiom agent closes it in Kapture, <strong>Then</strong> still no <code>COMPLAINTS</code> row exists for that <code>ticket_id</code> and no restore candidate was created.</td><td>R1 MUST NOT</td><td>Settled</td></tr></table>
+<h3>R2 — The card says the work is done and asks only for acknowledgement</h3>
+<table><tr><th>ID</th><th>Story</th><th>MUST</th><th>MUST NOT</th></tr><tr><td>R2</td><td>As a CSP, I want the card to tell me plainly that Wiom closed this and that nothing is left to do, so that I do not travel to a job that no longer exists.</td><td><strong>(a)</strong> Add an update row to the ticket's Updates list, unread, carrying the supplied copy. <strong>(b)</strong> Change the home card subtitle to the supplied copy. <strong>(c)</strong> Replace the deadline block with the completed treatment the app already uses on a resolved restore — the label <code>schedule.deadline.completed</code>, no countdown. <strong>(d)</strong> Offer one action, <strong>ठीक है</strong>, and no other. <strong>(e)</strong> Raise the card in the feed, which by TAS's existing sort is what showing it means. ⚠️ <em>AI GENERATED — review</em>.</td><td>Offer accept, assign-technician, start-work or resolve on the card; show a running countdown; show the card as still owing work.</td></tr></table>
+<table><tr><th>AC</th><th>Given / When / Then</th><th>Verifies</th><th>Status</th></tr><tr><td>AC-R2-1</td><td><strong>Given</strong> the resolved candidate from AC-R1-1, <strong>When</strong> the CSP opens the service drilldown, <strong>Then</strong> the Updates section shows one unread row reading "कस्टमर ने Wiom को बताया कि उनका नेट चल गया है, इस लिए Wiom ने यह टिकट रीज़ॉल्व कर दिया है", and the unread count reads 1.</td><td>R2a</td><td>Settled</td></tr><tr><td>AC-R2-2</td><td><strong>Given</strong> the same card, <strong>When</strong> the CSP opens the drilldown, <strong>Then</strong> the only action offered is ठीक है — accept, assign technician and resolve are all absent.</td><td>R2d · G2</td><td>Settled</td></tr><tr><td>AC-R2-3</td><td><strong>Given</strong> the same card, whose <code>deadline_at</code> was 2026-08-12T15:00 IST, <strong>When</strong> the CSP opens the drilldown at 09:25 IST, <strong>Then</strong> the schedule block reads "आपकी तरफ से काम पूरा हो गया" and no countdown pill is shown.</td><td>R2c</td><td>Settled</td></tr><tr><td>AC-R2-4</td><td><strong>Given</strong> CSP a0b6v6 holding three other open cards, <strong>When</strong> the agent's closure is accepted at 09:20:23 and the CSP opens the home feed at 09:25, <strong>Then</strong> the card for ticket 1786508079949000 is first in the feed, its subtitle reads "कस्टमर ने बताया नेट ठीक हो गया है", and it carries an unread badge.</td><td>R2b · R2e</td><td>Settled</td></tr></table>
+<h3>R3 — The CSP is told without opening the app</h3>
+<table><tr><th>ID</th><th>Story</th><th>MUST</th><th>MUST NOT</th></tr><tr><td>R3</td><td>As a CSP who is not looking at the app, I want to be told that Wiom closed the ticket so that I stop working it.</td><td><strong>(a)</strong> Send a push notification to the CSP when the closure is accepted and the CSP has not already resolved the ticket. <strong>(b)</strong> Opening the notification lands the CSP on the service drilldown for that ticket, showing ठीक है. <strong>(c)</strong> Opening the ticket directly lands on the identical screen.</td><td>Send the notification when the CSP's own resolve was the one that closed the ticket. ⚠️ <em>AI GENERATED — review</em>.</td></tr></table>
+<table><tr><th>AC</th><th>Given / When / Then</th><th>Verifies</th><th>Status</th></tr><tr class="open-row"><td>AC-R3-1</td><td><strong>Given</strong> ticket 1786508079949000 with the CSP's app installed and the complaint open, <strong>When</strong> the closure from AC-R1-1 is accepted, <strong>Then</strong> a push notification reaches the CSP's device within C-03 [TBD — not asked].</td><td>R3a</td><td>OPEN</td></tr><tr><td>AC-R3-2</td><td><strong>Given</strong> that notification, <strong>When</strong> the CSP taps it, <strong>Then</strong> the app opens the service drilldown for ticket 1786508079949000 with the ठीक है action visible — the same screen reached by opening the card from the feed.</td><td>R3b · R3c</td><td>Settled</td></tr><tr><td>AC-R3-3 ⚠️ <em>AI GENERATED — review</em></td><td><strong>Given</strong> a ticket the CSP resolved in the app at 09:19, <strong>When</strong> Kapture records its own closure at 09:20 as the downstream echo of that resolve, <strong>Then</strong> no push notification is sent.</td><td>R3 MUST NOT · T5</td><td>Settled</td></tr></table>
+<h3>R4 — Acknowledgement archives the card</h3>
+<table><tr><th>ID</th><th>Story</th><th>MUST</th><th>MUST NOT</th></tr><tr><td>R4</td><td>As a CSP, I want tapping ठीक है to clear the card from my list, so that my feed holds only work I still owe.</td><td><strong>(a)</strong> On ठीक है, move the card to the archive. <strong>(b)</strong> Accept the tap from the CSP who owns the card or from the technician assigned to it. <strong>(c)</strong> Until the tap, keep the card in the feed.</td><td>Archive the card before it is acknowledged; reopen or re-activate the complaint on the tap; accept the tap from anyone other than the card's CSP or its assigned technician.</td></tr></table>
+<table><tr><th>AC</th><th>Given / When / Then</th><th>Verifies</th><th>Status</th></tr><tr><td>AC-R4-1</td><td><strong>Given</strong> the resolved, unacknowledged card from AC-R1-1, <strong>When</strong> the CSP taps ठीक है, <strong>Then</strong> the card is no longer in the feed, it is retrievable in the archive, and the complaint remains CLOSED with <code>resolved_at</code> unchanged at 09:20:23.</td><td>R4a · R4 MUST NOT</td><td>Settled</td></tr><tr><td>AC-R4-2</td><td><strong>Given</strong> the same card with technician T assigned before the closure, <strong>When</strong> T taps ठीक है, <strong>Then</strong> the card archives exactly as in AC-R4-1.</td><td>R4b</td><td>Settled</td></tr><tr><td>AC-R4-3</td><td><strong>Given</strong> the same card, <strong>When</strong> a CSP who does not own it opens it, <strong>Then</strong> ठीक है is not offered and the card does not archive.</td><td>R4b · R4 MUST NOT</td><td>Settled</td></tr><tr><td>AC-R4-5</td><td><strong>Given</strong> the closure accepted at 09:20:23, <strong>When</strong> CSP a0b6v6 opens the feed at 09:21 without tapping ठीक है, <strong>Then</strong> the card is in the feed, not the archive.</td><td>R4c · R4 MUST NOT</td><td>Settled</td></tr><tr class="open-row"><td>AC-R4-4</td><td><strong>Given</strong> the card resolved at 09:20:23 on 12 Aug and never acknowledged, <strong>When</strong> the CSP opens the feed on 20 Aug, <strong>Then</strong> <code>[CLARIFY: is the card still in the feed? Today the gateway's v2 inline window (C-01, 7 days) moves it to the archive on age alone, and C-02 (30 days) removes it entirely. "Stays until tapped, forever" cannot hold without changing both.]</code></td><td>R4c · C-01 · C-02</td><td>OPEN</td></tr></table>
+<h3>R5 — Quality credits the CSP at the moment the fault was fixed</h3>
+<table><tr><th>ID</th><th>Story</th><th>MUST</th><th>MUST NOT</th></tr><tr><td>R5</td><td>As a CSP, I want to be judged on when my customer's fault was actually fixed, not on when I got round to tapping a button, so that I am not penalised for a sync failure.</td><td><strong>(a)</strong> Score the complaint against the agent's closure time, not the acknowledgement time. <strong>(b)</strong> Credit the resolution to the CSP.</td><td>Record the complaint as breaching its deadline when the agent's closure fell before that deadline; score the ticket against the ठीक है tap.</td></tr></table>
+<table><tr><th>AC</th><th>Given / When / Then</th><th>Verifies</th><th>Status</th></tr><tr><td>AC-R5-1</td><td><strong>Given</strong> ticket 1786508079949000, raised 09:17, <code>sla_at</code> 15:00, closed by the agent at 09:20:23 and acknowledged by the CSP at 16:59, <strong>When</strong> the resolution ledger is written, <strong>Then</strong> it reads <code>resolved_within_tat</code> = true and <code>excluded_from_scoring</code> = false.</td><td>R5a · G1</td><td>Settled</td></tr><tr><td>AC-R5-3</td><td><strong>Given</strong> the closure in AC-R1-1, <strong>When</strong> the ledger row is written, <strong>Then</strong> its <code>csp_id</code> is a0b6v6 — the resolution counts toward that CSP's resolved volume, not Wiom's.</td><td>R5b</td><td>Settled</td></tr><tr><td>AC-R5-2</td><td><strong>Given</strong> ticket 1786419974996000, raised 2026-08-11T09:12:34 IST with <code>sla_at</code> 2026-08-11T15:00, closed by the agent at 2026-08-12T17:18:17 — 26 h 18 min past the deadline, <strong>When</strong> the ledger is written, <strong>Then</strong> it reads <code>resolved_within_tat</code> = false. Closure sync does not rescue a fault that was already late.</td><td>R5a</td><td>Settled</td></tr></table>
+  <hr class="sect-end">
+</section>
+<div class="part-divider how">
+  <div class="label">Behaviour &amp; detail</div>
+  <h2>HOW — behaviour, screens, criteria</h2>
+</div>
+
+<section class="spec" id="s3">
+  <h2><span class="num">§3.</span> System Behaviour <span class="tier how">HOW</span></h2>
+<h3>3a. System flow chart</h3>
+<div class="mermaid">
+flowchart TD
+    A["Kapture agent closes ticket (disposed webhook reaches Ticket Service)"] --&gt; B{"Ticket partner-assigned&lt;br/&gt;and Internet Issues?"}
+    B -- "No" --&gt; Z["Outside this spec — §1 Boundary"]
+    B -- "Yes" --&gt; C{"Live complaint exists&lt;br/&gt;for this ticket?"}
+    C -- "No" --&gt; Z
+    C -- "Yes" --&gt; D{"Complaint already&lt;br/&gt;in a terminal state?"}
+    D -- "Yes" --&gt; E["T5 — discard, no second resolution"]
+    D -- "No" --&gt; F["T1 — resolve complaint at agent closure time"]
+    F --&gt; G["T2 — resolve candidate, card becomes resolved-unacknowledged"]
+    G --&gt; H["T3 — notify the CSP"]
+    H --&gt; I{"CSP or assigned technician&lt;br/&gt;taps ठीक है?"}
+    I -- "Yes" --&gt; J["T4 — archive the card"]
+    I -- "No" --&gt; K["T6 — card stays in the feed"]
+</div>
+<p><strong>Precedence:</strong> a CSP resolve and a Kapture closure landing at the same instant resolve by first arrival — whichever reaches SRS first takes effect as T1, and the second is discarded as T5 (AC-RACE-1).</p>
+<h3>3b. State transition table — canon</h3>
+<p>Lifecycle of a <strong>restore execution candidate</strong> (created by SRS when it classifies a complaint). The complaint's own lifecycle sits in SRS and is out of scope except where these rows name it; the reopen lifecycle is out of scope entirely (§1 Boundary).</p>
+<table><tr><th>ID</th><th>From</th><th>Action / Trigger</th><th>Rule / Check</th><th>To</th><th>Side-effects</th></tr><tr><td>T1</td><td>PENDING_ACCEPTANCE · ACCEPTED · ASSIGNED_TECHNICIAN · IN_PROGRESS · AWAITING_VERIFICATION</td><td>Kapture closure accepted</td><td>Ticket partner-assigned, Internet Issues, complaint not terminal</td><td>(complaint CLOSED)</td><td>Complaint resolved with <code>resolved_at</code> = the agent's closure instant (R1a); one resolution signal emitted (R1d); scored against that instant (R5a).</td></tr><tr><td>T2</td><td>PENDING_ACCEPTANCE · ACCEPTED · ASSIGNED_TECHNICIAN · IN_PROGRESS · AWAITING_VERIFICATION</td><td>T1 completed</td><td>—</td><td>COMPLETED</td><td>Candidate resolved, attributed to the CSP (R1c); card becomes resolved-unacknowledged — update row added unread, home subtitle changed, deadline block replaced, ठीक है the only action (R2a–d); card raised in the feed (R2e).</td></tr><tr><td>T3</td><td>COMPLETED (unacknowledged)</td><td>T2 completed</td><td>CSP's own resolve was not the trigger</td><td>COMPLETED (unacknowledged)</td><td>Push notification sent within C-03 (R3a), deep-linking to the drilldown (R3b).</td></tr><tr><td>T4</td><td>COMPLETED (unacknowledged)</td><td>CSP or assigned technician taps ठीक है</td><td>Actor owns the card or is its assigned technician</td><td>COMPLETED (archived)</td><td>Card leaves the feed and is retrievable in the archive (R4a); complaint untouched (R4 MUST NOT).</td></tr><tr><td>T5</td><td>COMPLETED · CANCELLED</td><td>Kapture closure accepted</td><td>Complaint already terminal</td><td>COMPLETED · CANCELLED</td><td>Closure discarded; no second resolution, no second signal, no notification (G4, R3 MUST NOT).</td></tr><tr><td>T6</td><td>COMPLETED (unacknowledged)</td><td>Time passes, no acknowledgement</td><td>—</td><td>COMPLETED (unacknowledged)</td><td><code>[CLARIFY: whether the card stays in the feed indefinitely, given C-01 moves it to the archive at 7 days on age alone — see AC-R4-4.]</code></td></tr><tr><td>T7 ⚠️ <em>AI GENERATED — review</em></td><td>COMPLETED (archived)</td><td>Kapture reopens the ticket within 48 h</td><td>—</td><td>(out of scope)</td><td>A fresh complaint and a fresh card are created by the existing reopen path; this candidate is untouched (§1 Boundary, AC-REG-3).</td></tr><tr><td>T8 ⚠️ <em>AI GENERATED — review</em></td><td>CANCELLED</td><td>Kapture closure accepted</td><td>—</td><td>CANCELLED</td><td>Not reachable as a change: a cancelled candidate is terminal, so the closure is discarded by T5.</td></tr></table>
+  <hr class="sect-end">
+</section>
+
+<section class="spec" id="s4">
+  <h2><span class="num">§4.</span> Cross-cutting Acceptance Criteria <span class="tier how">HOW</span></h2>
+<table><tr><th>AC</th><th>Given / When / Then</th><th>Verifies</th><th>Status</th></tr><tr><td>AC-WF-1</td><td><strong>Given</strong> ticket 1786508079949000 raised 09:17 with <code>sla_at</code> 15:00 and a card at PENDING_ACCEPTANCE, <strong>When</strong> the agent closes it in Kapture at 09:20:23 and the CSP taps ठीक है at 16:59, <strong>Then</strong> the complaint closed at 09:20:23, the ledger reads <code>resolved_within_tat</code> = true, no technician was ever dispatched, and the card sits in the archive.</td><td>T1 · T2 · T3 · T4 · G1 · G2</td><td>Settled</td></tr><tr><td>AC-WF-2</td><td><strong>Given</strong> the same ticket, <strong>When</strong> the agent closes it at 09:20:23 and the CSP never opens the app, <strong>Then</strong> the complaint is still CLOSED, the ledger still reads <code>resolved_within_tat</code> = true, and the CSP's score is unaffected by the missing acknowledgement.</td><td>T1 · T2 · T6 · G1 · G3</td><td>Settled</td></tr><tr><td>AC-WF-3</td><td><strong>Given</strong> a card at ASSIGNED_TECHNICIAN with technician T due on site, <strong>When</strong> the agent closes the ticket in Kapture, <strong>Then</strong> the card offers only ठीक है, and T has no action that sends them to the site.</td><td>T2 · G2</td><td>Settled</td></tr><tr class="open-row"><td>AC-FAIL-1</td><td><strong>Given</strong> a Kapture closure accepted at 09:20:23, <strong>When</strong> C-04 [TBD — not asked] has elapsed and the complaint is still not CLOSED, <strong>Then</strong> the closure is visible to Support/Ops as undelivered, carrying the ticket id and the agent's closure instant, so that the complaint can be closed against that instant rather than against the CSP.</td><td>R1a · C-04 · G1</td><td>OPEN</td></tr><tr><td>AC-REG-1</td><td><strong>Given</strong> a card at ACCEPTED whose complaint is open, <strong>When</strong> CSP a0b6v6 taps Resolve in the app at 11:00:00, <strong>Then</strong> the complaint's <code>resolved_at</code> is 11:00:00, the Kapture ticket reaches <code>is_resolved</code> = 1, and no ठीक है card and no push notification are produced for that ticket.</td><td>§1 Boundary</td><td>Settled</td></tr><tr><td>AC-REG-2</td><td><strong>Given</strong> a SHIFTING candidate in <code>RESTORE_EXECUTION_CANDIDATES</code> with <code>task_family</code> = SHIFTING at state ACCEPTED, <strong>When</strong> a Wiom agent closes its ticket in Kapture, <strong>Then</strong> the candidate's <code>state</code> and <code>is_csp_actionable</code> are unchanged, no update row is added to it, and its allowed actions still include the shifting set.</td><td>§1 Boundary</td><td>Settled</td></tr><tr><td>AC-REG-3</td><td><strong>Given</strong> an acknowledged, archived card from AC-R4-1, <strong>When</strong> an agent reopens that ticket in Kapture 20 hours later, <strong>Then</strong> a second <code>COMPLAINTS</code> row exists for that <code>ticket_id</code> with its own <code>sla_at</code>, a second candidate exists, and the archived candidate's <code>state</code> and <code>resolved_at</code> are unchanged.</td><td>§1 Boundary · T7</td><td>Settled</td></tr><tr><td>AC-REG-4</td><td><strong>Given</strong> a complaint with <code>secondary_subtype</code> = NO_INTERNET, <strong>When</strong> CSP a0b6v6 taps Resolve in the app, <strong>Then</strong> the complaint's <code>verification_method</code> and <code>system_verification_result</code> are written exactly as they are today, and no closure-sync path has read or altered either.</td><td>§1 Boundary</td><td>Settled</td></tr><tr><td>AC-GRD-1 ⚠️ <em>AI GENERATED — review</em></td><td><strong>Given</strong> every complaint closed by a Kapture closure that landed before its <code>sla_at</code> across a full month, <strong>When</strong> the ledger is read, <strong>Then</strong> none reads <code>resolved_within_tat</code> = false. On the month measured this converts 410 recorded breaches to on-time.</td><td>G1 · R5a</td><td>Settled</td></tr><tr><td>AC-GRD-2</td><td><strong>Given</strong> a resolved-unacknowledged card reached from each of PENDING_ACCEPTANCE, ACCEPTED, ASSIGNED_TECHNICIAN, IN_PROGRESS and AWAITING_VERIFICATION in turn, <strong>When</strong> the CSP opens each one, <strong>Then</strong> every one offers ठीक है alone — accept task, assign technician, start work and resolve are absent from all five.</td><td>G2 · R2d</td><td>Settled</td></tr><tr><td>AC-GRD-3 ⚠️ <em>AI GENERATED — review</em></td><td><strong>Given</strong> every partner-assigned Internet Issues ticket closed in Kapture across a full month, <strong>When</strong> complaint statuses are read seven days later, <strong>Then</strong> none is still open. On the month measured, 1,774 were.</td><td>G3 · R1a</td><td>Settled</td></tr><tr><td>AC-GRD-4</td><td><strong>Given</strong> one fault, <strong>When</strong> its ticket is closed in Kapture and the closure is delivered three times, <strong>Then</strong> exactly one complaint resolution and one resolution signal exist.</td><td>G4 · R1d</td><td>Settled</td></tr><tr><td>AC-RACE-1</td><td><strong>Given</strong> a card at ACCEPTED, <strong>When</strong> the CSP taps Resolve at 09:20:23.100 and the agent's Kapture closure arrives at 09:20:23.400, <strong>Then</strong> the complaint carries <code>resolved_at</code> = 09:20:23.100 from the CSP's own resolve, the Kapture closure is discarded, and no ठीक है card or notification is produced.</td><td>T5 · R3 MUST NOT</td><td>Settled</td></tr><tr><td>AC-DUP-1</td><td><strong>Given</strong> the closure from AC-R1-1 already accepted and the complaint CLOSED, <strong>When</strong> the same closure is delivered again, <strong>Then</strong> <code>resolved_at</code> is unchanged at 09:20:23, no second signal is emitted, and no second notification is sent.</td><td>T5 · G4</td><td>Settled</td></tr><tr><td>AC-DUP-2</td><td><strong>Given</strong> the resolved, unacknowledged card, <strong>When</strong> the CSP taps ठीक है twice within one second, <strong>Then</strong> the card archives once and the second tap changes nothing.</td><td>T4</td><td>Settled</td></tr><tr class="open-row"><td>AC-BV-1</td><td><strong>Given</strong> the card resolved at 2026-08-12T09:20:23 and never acknowledged, <strong>When</strong> the CSP opens the feed at 2026-08-19T09:20:22 — one second inside C-01 (7 days) — <strong>Then</strong> <code>[CLARIFY: is the card in the feed? This is the boundary AC-R4-4 turns on.]</code></td><td>C-01 · R4c</td><td>OPEN</td></tr><tr class="open-row"><td>AC-BV-2</td><td><strong>Given</strong> the same unacknowledged card, <strong>When</strong> the CSP opens the feed at 2026-08-19T09:20:24 — one second past C-01 — <strong>Then</strong> <code>[CLARIFY: feed or archive?]</code></td><td>C-01 · R4c</td><td>OPEN</td></tr><tr class="open-row"><td>AC-BV-3</td><td><strong>Given</strong> the same unacknowledged card, <strong>When</strong> the CSP opens the archive at 2026-09-11T09:20:24 — one second past C-02 (30 days) — <strong>Then</strong> <code>[CLARIFY: the card is gone from both surfaces; is an unacknowledged card allowed to disappear unacknowledged?]</code></td><td>C-02 · R4c</td><td>OPEN</td></tr><tr><td>AC-BV-4</td><td><strong>Given</strong> a CSP with zero other cards, <strong>When</strong> the agent's closure is accepted, <strong>Then</strong> the resolved-unacknowledged card is the only card in the feed and is first by definition.</td><td>R2e</td><td>Settled</td></tr></table>
+  <hr class="sect-end">
+</section>
+
+<section class="spec" id="s5">
+  <h2><span class="num">§5.</span> Configurability <span class="tier how">HOW</span></h2>
+<table><tr><th>ID</th><th>Parameter</th><th>Value / Default</th><th>Kind</th><th>Range · Owner · Why configurable</th></tr><tr><td>C-01</td><td>Gateway v2 inline feed window — how long a resolved card stays in the feed before it is reachable only in the archive</td><td>7 days (existing)</td><td>Fixed</td><td>—</td></tr><tr><td>C-02</td><td>TAS terminal retention — how long a resolved card is retained at all</td><td>30 days (existing)</td><td>Fixed</td><td>—</td></tr><tr><td>C-03</td><td>Kapture closure accepted → push notification reaches the CSP</td><td>[TBD — not asked]</td><td>[TBD — not asked]</td><td>—</td></tr><tr><td>C-04</td><td>Kapture closure accepted → complaint CLOSED, or the closure is raised to Support/Ops</td><td>[TBD — not asked]</td><td>[TBD — not asked]</td><td>—</td></tr></table>
+<p><strong>Interaction note (C-01 × C-02).</strong> These are existing platform windows, not values this feature introduces, and they are the reason AC-R4-4 and T6 are OPEN: between C-01 and C-02 the card is in the archive rather than the feed, and after C-02 it is gone — so an unacknowledged card cannot in fact remain in the feed indefinitely without changing both.</p>
+  <hr class="sect-end">
+</section>
+
+<section class="spec" id="s6">
+  <h2><span class="num">§6.</span> Impacted Systems &amp; References <span class="tier how">HOW</span></h2>
+<table><tr><th>System / Service</th><th>Impact</th><th>Reference material</th><th>What was checked · ACs grounded on it</th></tr><tr><td>Ticket Service Java</td><td>Must send the closure onward to SRS — the single missing link</td><td><code>controller/KaptureTicketController.java:842,892</code> (disposed webhook sets local status RESOLVED with system user 137439087976); <code>client/SrsClient.java</code></td><td>The webhook already receives every Kapture closure and already resolves the ticket locally. <code>SrsClient</code> has only <code>notifyComplaint</code> and <code>notifyReopenComplaint</code> — there is no close or resolve call, which is precisely why the closure stops here · AC-R1-1 · AC-R1-3</td></tr><tr><td>SRS — <code>csp-support-resolution-service</code></td><td>Must accept a closure and resolve the complaint</td><td><code>api/InboundEventController.java:31</code> (<code>/srs/events/*</code>, 9 existing inbound event endpoints); <code>COMPLAINTS</code> columns <code>status</code>, <code>resolved_at</code>, <code>closed_timestamp</code>, <code>sla_at</code>, <code>within_tat</code>, <code>signal_emitted</code>, <code>verification_method</code>, <code>system_verification_result</code></td><td>An inbound-event endpoint pattern already exists and is the natural home for this; <code>resolved_at</code> is a distinct column from <code>closed_timestamp</code>, and scoring keys on the former. The verification columns are named so AC-REG-4 has an observation point · AC-R1-1 · AC-R5-1 · AC-REG-4</td></tr><tr><td>TAS restore — <code>csp-tas-service</code></td><td>Already completes the candidate on <code>COMPLAINT_RESOLVED</code>; must additionally hold a resolved-but-unacknowledged card and accept the acknowledgement. Must not act on the SHIFTING family</td><td><code>application/impl/InboundEventProcessingServiceImpl.java:94-119</code>; <code>domain/model/CandidateState.java</code>; <code>domain/model/ResolverActorType.java</code>; <code>RESTORE_EXECUTION_CANDIDATES</code> columns <code>task_family</code>, <code>state</code>, <code>is_csp_actionable</code>, <code>resolved_by_actor_type</code>, <code>resolved_by_actor_id</code></td><td>The resolve half is built and idempotent — it dedupes on event id and acts only on non-terminal candidates, so T5 is already the existing behaviour. <code>ResolverActorType</code> is CSP · TECHNICIAN · OTHER, derived from the JWT role, which supports R1c and R4b. <code>task_family</code> is RESTORE or SHIFTING, giving AC-REG-2 its observation point · AC-R1-2 · AC-DUP-1 · AC-REG-2</td></tr><tr><td>TAS aggregation (feed)</td><td>Card ordering and archival</td><td><code>aggregation/service/AggregationEngine.java:40,53,152</code>; <code>aggregation/config/TasParameters.java:44-75</code></td><td>The v2 feed sorts on <code>latest_attention_at</code> DESC and nothing else, so raising the update <em>is</em> the rise — no ordering rule is needed or possible. Terminal cards already render greyed with no actionable dot and are retained 30 days · AC-R2-4 · AC-R4-4</td></tr><tr><td>CSP app</td><td>Renders the resolved treatment and the ठीक है action</td><td><code>RestoreDrilldownContent.kt:298-307</code>; <code>ScheduleSection.kt:44-65</code>; <code>install_labels_v1.4_hi_en.json:118</code></td><td>The completed deadline treatment already exists: on a resolved restore the app passes <code>deadlineAt = null</code> and <code>isCompleted = true</code>, and the block renders <code>schedule.deadline.completed</code> — "आपकी तरफ से काम पूरा हो गया" / "Your work is complete". R2c reuses it rather than adding anything · AC-R2-3</td></tr><tr><td>Quality OS — <code>csp-quality-service</code></td><td>Reads the resolution and scores the CSP</td><td><code>COMPLAINT_RESOLUTION_LEDGER</code> columns <code>resolved_within_tat</code>, <code>excluded_from_scoring</code>, <code>tat_window_hours</code></td><td>Of 395 tickets where Kapture closed inside the deadline and the CSP marked late, 393 are recorded <code>resolved_within_tat</code> = false and none excluded — so the penalty is real and the ledger is the place it must change · AC-R5-1 · AC-GRD-1</td></tr><tr><td>Measurement</td><td>Sizing and the ACs' concrete data</td><td><code>kapture-closure-sync-study/notes/04-tree.md</code>; <code>queries/tree-all-nodes.sql</code>, <code>waste.sql</code>, <code>ledger.sql</code>, <code>spot-check-sync-loss.sql</code></td><td>5,526 tickets/month closed in Kapture first (12.97% of resolved); 1,774 complaints never close; 1,078 technicians dispatched to resolved faults; 410 breaches wrongly scored · AC-GRD-1 · AC-GRD-3 · AC-REG-1</td></tr></table>
+  <hr class="sect-end">
+</section>
+
+<section class="spec" id="s7">
+  <h2><span class="num">§7.</span> Glossary <span class="tier how">HOW</span></h2>
+<table><tr><th>Term</th><th>Meaning</th><th>Owner (domain)</th></tr><tr><td>Kapture closure</td><td>A Wiom call-centre agent marking a ticket Completed, Resolved or Resolved on Call in Kapture. Reaches Ticket Service Java as a disposed webhook and, today, travels no further.</td><td>Support/Ops</td></tr><tr><td>Complaint</td><td>SRS's record of the customer's fault. Carries the classification, the deadline (<code>sla_at</code>), the resolution time and the Quality signal. One ticket may produce several complaints across a reopen chain.</td><td>SRS</td></tr><tr><td>Restore execution candidate</td><td>TAS's CSP-facing record of the work: the card, its allowed actions, its attention timers and its timeline. Created when SRS classifies a complaint; the thing the CSP actually sees and taps.</td><td>TAS</td></tr><tr><td>Resolved-unacknowledged ⚠️ <em>AI GENERATED — review</em></td><td>A card whose complaint and candidate are resolved, which remains in the CSP's feed carrying one action — ठीक है — until the CSP or their assigned technician taps it.</td><td>TAS</td></tr><tr><td>Archived</td><td>Reachable in the CSP's archive rather than the feed. Today a card reaches this on age (C-01); under this spec, on acknowledgement.</td><td>TAS</td></tr><tr><td>Ticket Service Java</td><td>The relay between Kapture and the OS. Receives Kapture webhooks, creates complaints in SRS, and pushes CSP resolutions back to Kapture.</td><td>Support/Ops</td></tr></table>
+  <hr class="sect-end">
+</section>
+
+<section class="spec" id="s8">
+  <h2><span class="num">§8.</span> Notes for System Capabilities <span class="tier how">HOW</span></h2>
+<table><tr><th>Capability</th><th>Needed by</th></tr><tr><td>Carry a Kapture-side closure, with the instant the agent closed it, from the relay to the complaint's owner.</td><td>T1 · R1a · §6 Ticket Service Java</td></tr><tr><td>Resolve a complaint on an authority other than the CSP's own action, while still attributing the resolution to that CSP.</td><td>T1 · T2 · R1c · R5b</td></tr><tr><td>Hold a card that is resolved and no longer actionable, yet still present in the CSP's feed, until its owner acknowledges it.</td><td>T2 · T4 · T6 · R4c</td></tr><tr><td>Record an acknowledgement against a card and move it to the archive on that acknowledgement rather than on age.</td><td>T4 · R4a · C-01</td></tr><tr><td>Notify a CSP of a change to a card they are not looking at, and deep-link them to that card.</td><td>T3 · R3a · R3b</td></tr><tr><td>Discard a closure that arrives for an already-terminal complaint, without a second resolution or signal.</td><td>T5 · G4</td></tr></table>
+  <hr class="sect-end">
+</section>
+<div class="part-divider">
+  <div class="label">Closeout</div>
+  <h2>REVIEW — what the PM still owes</h2>
+</div>
+
+<section class="spec" id="ai-generated-content-for-review" style="margin-top:40px;">
+  <h2>AI-generated content for review</h2>
+<table><tr><th>Location (section · ID)</th><th>What was generated</th><th>Basis</th></tr><tr><td>§2 · R1d</td><td>"Emit exactly one resolution signal for the fault" as an explicit obligation</td><td>Inference from the PM's "similar to what the CSP marking resolved would have done here" — a CSP resolve emits one signal, so parity implies one. Raised to an obligation because duplicate signals are the known failure of the create path (F-14).</td></tr><tr><td>§2 · R2e</td><td>Raising the card in the feed stated as an obligation rather than a consequence</td><td>The PM chose "yes, float it"; TAS's sort makes raising an update and raising the card the same act, so it is written as one obligation, not two.</td></tr><tr><td>§2 · R3 MUST NOT · AC-R3-3</td><td>Suppressing the notification when the CSP's own resolve caused the Kapture closure</td><td>Inference from the race decision (first arrival wins). Not stated by the PM; without it, every CSP-resolved ticket would notify its own CSP.</td></tr><tr><td>§3b · T7 · T8</td><td>Reopen and cancelled-state rows</td><td>Required by the template's full state × trigger coverage. T7 records the PM's "new complaint, fresh card, as today"; T8 is marked not reachable.</td></tr><tr><td>§4 · AC-GRD-1 · AC-GRD-3</td><td>Stating the guardrails as month-scale assertions with the measured counts</td><td>The guardrails are the PM's; expressing them as population-level checks with the study's numbers is a drafting choice.</td></tr><tr><td>§7</td><td>"Resolved-unacknowledged" as a coined term</td><td>No name was supplied for the state between resolution and ठीक है; the document needs one canonical name.</td></tr></table>
+  <hr class="sect-end">
+</section>
+
+<section class="spec" id="not-asked" style="margin-top:40px;">
+  <h2>Not asked</h2>
+<table><tr><th>Location (section · ID)</th><th>What was never asked</th></tr><tr><td>Header</td><td>Reviewer (eng lead), Support/Ops consulted party, TAS eng consulted party</td></tr><tr><td>§5 · C-03</td><td>How fast must the push notification reach the CSP after the closure is accepted, and is that fixed or configurable?</td></tr><tr><td>§5 · C-04</td><td>How long may a Kapture closure take to become a closed complaint before it is treated as failed, and what happens then? (AC-FAIL-1 depends on this.)</td></tr><tr><td>§2 · R3</td><td>What the CSP sees if the notification never arrives — is the in-app card the sole guarantee?</td></tr><tr><td>§2 · R2</td><td>The English copy for the update row and the home subtitle. Only Hindi was supplied in the updated design.</td></tr></table>
+  <hr class="sect-end">
+</section>
+
+<section class="spec" id="overrides" style="margin-top:40px;">
+  <h2>Overrides</h2>
+<table><tr><th>Rule overridden</th><th>What was done instead</th><th>Rationale</th><th>Approved by</th></tr><tr><td>§2 — copy must be true of the case it fires on</td><td>The supplied copy asserts "कस्टमर ने Wiom को बताया कि उनका नेट चल गया है" on <strong>all</strong> Kapture closures, while 59% (3,260/mo) are closed on "ping is up, customer not called" and only 2.5% (138/mo) are a customer actually saying it works</td><td>PM chose full coverage of the gap over per-case copy accuracy, and chose to keep the supplied copy unchanged, after being shown the split</td><td>Ashish Raj · 17 Sep 2026</td></tr></table>
+  <hr class="sect-end">
+</section>
+
+<p style="margin-top:30px;font-size:12px;color:var(--muted);text-align:center;">
+  Rendered from Kapture_Closure_Sync_PRD.md — the markdown is the source of truth
+</p>
+
+</main>
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'default', flowchart: { curve: 'basis' } });
+</script>
+</body>
+</html>
