@@ -50,7 +50,7 @@ The CSP→Kapture direction works and is effectively instant: **median propagati
 | **D** CSP closed first, agent closure after (reopen cycles) | 1,050 | 2.5% | 428 | 69.8% |
 | **E** no resolution event | 16 | 0.04% | 15 | — |
 
-**Kapture-first = B + C = 5,526 (12.96%).** CSP-first = A + D = 37,084 (87.0%).
+**Kapture-first = B + C = 5,526 (12.96%).** CSP-first = A + D = 37,085 (87.0%).
 
 **Trend (matched d01–10 windows, % of *resolved* tickets):** Aug 9.43% → Sep 14.24%.
 ⚠ Cannot be measured before ~mid-Jul 2026 — see F-19. The apparent "0% before July" in

@@ -74,6 +74,26 @@
   .close p:last-child{margin-bottom:0}
   .close b{color:var(--ink)}
   code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:var(--surface-alt);padding:1px 5px;border-radius:4px}
+  /* tree */
+  .tree{background:var(--surface);border:1px solid var(--rule);border-radius:9px;padding:18px 20px;margin:0 0 10px;overflow-x:auto}
+  .tree ul{list-style:none;margin:0;padding:0 0 0 0}
+  .tree>ul{padding-left:0}
+  .tree ul ul{padding-left:20px;border-left:1px solid var(--rule);margin-left:9px}
+  .tree li{position:relative;padding:4px 0 4px 0;margin:0;font-size:.855rem;line-height:1.45;color:var(--ink-soft)}
+  .tree ul ul>li::before{content:"";position:absolute;left:-20px;top:16px;width:14px;height:1px;background:var(--rule)}
+  .tree .n{display:inline-block;min-width:66px;font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink);text-align:right;margin-right:11px;font-size:.92rem}
+  .tree .pc{color:var(--slate);font-weight:500;font-size:.8rem;margin-right:8px;font-variant-numeric:tabular-nums}
+  .tree .lbl{color:var(--ink)}
+  .tree .sub{display:block;margin-left:77px;font-size:.79rem;color:var(--slate);line-height:1.45}
+  .tree li.ok>.n{color:var(--good)}
+  .tree li.bad>.n{color:var(--crit)}
+  .tree li.star{background:var(--crit-wash);border-radius:6px;padding-left:8px;padding-right:10px;margin-left:-8px}
+  .tree li.star>.n{color:var(--crit)}
+  .tree li.star .lbl{font-weight:650;color:var(--crit)}
+  .tree li.quiet>.n,.tree li.quiet .lbl{color:var(--slate)}
+  .tree li.hdr{font-size:.74rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--slate-light);padding-top:12px}
+  .tcap{font-size:.78rem;color:var(--slate);margin:0 0 24px;max-width:76ch}
+  .tcap b{color:var(--ink);font-weight:620}
   .fnote{font-size:.8rem;color:var(--slate);line-height:1.5;max-width:76ch;margin:14px 0 0}
   @media (max-width:620px){.wrap{padding:0 16px 50px}}
 </style>
@@ -119,27 +139,61 @@
   propagation <b>one second</b>. So the order of a closure is unambiguous in the data. The reverse
   direction does not exist: a Kapture closure reaches nothing.</p>
 
-  <div class="bar">
-    <div style="width:84.5%;background:#2F6B3A">A &middot; CSP closed &mdash; 84.5%</div>
-    <div style="width:8.1%;background:#A32219">C &middot; 8.1%</div>
-    <div style="width:4.8%;background:#7A1A13">B &middot; 4.8%</div>
-    <div style="width:2.6%;background:#9AA1AB">D+E</div>
-  </div>
-  <p class="bcap">42,626 partner-assigned Internet Issues tickets &middot; 969 CSPs &middot; 11 Aug &ndash; 10 Sep 2026</p>
+  <div class="tree">
+  <ul>
+    <li><span class="n">42,626</span><span class="lbl">tickets in scope</span>
+      <span class="sub">partner-assigned Internet Issues &middot; 969 CSPs &middot; raised 11 Aug &ndash; 10 Sep 2026</span>
+      <ul>
+        <li class="ok"><span class="n">37,085</span><span class="pc">87.0%</span><span class="lbl">CSP closed first &mdash; syncs to Kapture in ~1 second. Working as designed.</span>
+          <ul>
+            <li class="quiet"><span class="n">36,035</span><span class="lbl">CSP closed it, no agent involvement</span></li>
+            <li class="quiet"><span class="n">1,050</span><span class="lbl">CSP closed it, agent closure later (reopen cycles)</span></li>
+          </ul>
+        </li>
 
-  <div class="tw">
-  <table>
-    <thead><tr><th>Class</th><th>Tickets</th><th>Share</th><th>CSPs</th><th>Within TAT</th><th>What happened</th></tr></thead>
-    <tbody>
-      <tr><td><b>A</b></td><td class="num">36,034</td><td class="num">84.5%</td><td class="num">883</td><td class="num">81.1%</td><td>CSP closed it. Propagated to Kapture in ~1s. Working as designed.</td></tr>
-      <tr class="hi"><td><b>C</b></td><td class="num">3,467</td><td class="num">8.1%</td><td class="num">640</td><td class="num"><b>26.9%</b></td><td>Kapture closed first; CSP marked it a median <b>15.2 h</b> later (P90 <b>4.1 days</b>)</td></tr>
-      <tr class="hi"><td><b>B</b></td><td class="num">2,059</td><td class="num">4.8%</td><td class="num">254</td><td class="num">&mdash;</td><td>Kapture closed it; the CSP <b>never</b> marked it. 95.5% still open in SRS.</td></tr>
-      <tr><td><b>D</b></td><td class="num">1,050</td><td class="num">2.5%</td><td class="num">428</td><td class="num">69.8%</td><td>CSP closed first, agent closure later &mdash; reopen cycles</td></tr>
-      <tr><td><b>E</b></td><td class="num">16</td><td class="num">0.04%</td><td class="num">15</td><td class="num">&mdash;</td><td>no resolution event at all</td></tr>
-      <tr class="tot"><td>B + C</td><td class="num">5,526</td><td class="num">12.96%</td><td class="num">737 touched</td><td></td><td><b>Closed in Kapture before the CSP</b></td></tr>
-    </tbody>
-  </table>
+        <li class="bad"><span class="n">5,526</span><span class="pc">13.0%</span><span class="lbl"><b>Kapture closed first</b> &mdash; the problem</span>
+          <ul>
+            <li><span class="n">3,467</span><span class="lbl">the CSP <b>did</b> mark it, but later</span>
+              <span class="sub">median <b>15.2 h</b> later &middot; P90 <b>97.7 h (4.1 days)</b></span>
+              <ul>
+                <li class="quiet"><span class="n">3</span><span class="lbl">no SLA stamped &mdash; not adjudicable</span></li>
+                <li class="quiet"><span class="n">2,145</span><span class="lbl">agent closed it <b>after</b> the TAT had already passed</span>
+                  <span class="sub">the CSP was late anyway &mdash; not caused by the sync gap</span></li>
+                <li><span class="n">1,319</span><span class="lbl">agent closed it <b>inside</b> the TAT</span>
+                  <ul>
+                    <li class="quiet"><span class="n">924</span><span class="lbl">CSP also marked inside the TAT &mdash; no harm done</span></li>
+                    <li class="star"><span class="n">395</span><span class="lbl">CSP marked late &mdash; UNFAIR BREACH</span>
+                      <span class="sub">393 of them scored <code>RESOLVED_WITHIN_TAT = false</code>, none excluded</span></li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+
+            <li><span class="n">2,059</span><span class="lbl">the CSP <b>never</b> marked it at all</span>
+              <ul>
+                <li class="quiet"><span class="n">202</span><span class="lbl">never reached SRS &mdash; no CSP card ever existed (separate gap)</span></li>
+                <li class="quiet"><span class="n">4</span><span class="lbl">no SLA stamped</span></li>
+                <li class="quiet"><span class="n">1,713</span><span class="lbl">agent closed it <b>after</b> the TAT &mdash; already breached</span></li>
+                <li class="star"><span class="n">140</span><span class="lbl">agent closed it inside the TAT &mdash; UNFAIR</span>
+                  <span class="sub">17 scored as breached so far; the rest sit unadjudicated</span></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+
+        <li class="quiet"><span class="n">15</span><span class="lbl">no resolution event at all</span></li>
+      </ul>
+    </li>
+  </ul>
   </div>
+  <p class="tcap">Every node from one query (<code>queries/tree-all-nodes.sql</code>) &mdash; the
+  leaves sum to 42,626 exactly.</p>
+
+  <p class="note warn"><b>The two shaded leaves are the whole injustice: 535 tickets a month.</b>
+  And the two &ldquo;after the TAT&rdquo; branches are why that is not 5,526 &mdash;
+  <b>3,858 tickets (70% of the Kapture-first population) were already late when the agent closed
+  them.</b> Fixing the sync does not save those. That single line is what separates the
+  <b>size of the gap (13.0%)</b> from the <b>size of the injustice (1.26%)</b>.</p>
 
   <p class="note"><b>Growing.</b> On matched day 1&ndash;10 windows, the Kapture-first share of
   resolved tickets went <b>9.43% (August) &rarr; 14.24% (September)</b>. It cannot be measured
@@ -149,39 +203,85 @@
 </section>
 
 <section class="sec">
-  <div class="sec-head"><span class="sec-num">03</span><h2>What it actually costs</h2></div>
+  <div class="sec-head"><span class="sec-num">03</span><h2>What the gap leaves behind</h2></div>
+  <p class="lede">The same 5,526 tickets, cut by consequence instead of by blame.</p>
 
-  <p class="lede">Measured on the 5,526 tickets Kapture closed first &mdash; what the CSP and the
-  platform did <em>after</em> the work was already finished and confirmed with the customer.</p>
+  <div class="tree">
+  <ul>
+    <li class="hdr">Where the SRS complaint ended up</li>
+    <li class="quiet"><span class="n">3,521</span><span class="lbl">eventually CLOSED &mdash; nearly all because the CSP marked it late</span></li>
+    <li class="bad"><span class="n">1,803</span><span class="lbl">still open &mdash; mean age <b>506 h (21 days)</b>, clock running</span>
+      <span class="sub">1,774 of these are the &ldquo;CSP never marked it&rdquo; branch: nobody is ever going to close them</span></li>
+    <li class="quiet"><span class="n">202</span><span class="lbl">never existed</span></li>
 
-  <div class="tw">
-  <table>
-    <thead><tr><th>Wasted action, per month</th><th>Count</th><th>Of what</th></tr></thead>
-    <tbody>
-      <tr class="hi"><td><b>Technician dispatched to an already-resolved fault</b></td><td class="num">1,078</td><td>1,019 class C + 59 class B</td></tr>
-      <tr><td>CSP accepted a card for already-closed work</td><td class="num">3,010</td><td>83.8% of class C</td></tr>
-      <tr><td>TAS nudge / attention fired on a dead card</td><td class="num">3,729</td><td>99.8% of class C got at least one</td></tr>
-      <tr class="hi"><td><b>Live, actionable cards for closed work</b></td><td class="num">1,760</td><td>1,628 never even accepted</td></tr>
-      <tr class="hi"><td><b>Complaints that never close in SRS</b></td><td class="num">1,774</td><td>mean age <b>506 h / 21 days</b>, clock still running</td></tr>
-      <tr><td>Quality resolution signals never emitted</td><td class="num">1,770</td><td>of 1,857 class-B tickets</td></tr>
-      <tr><td>SLA-breach facts emitted into a void</td><td class="num">1,373</td><td>no registered producer or consumer (F-03)</td></tr>
-      <tr><td>TAT breaches scored against a CSP who was in fact on time</td><td class="num">410</td><td>393 confirmed in the Quality ledger</td></tr>
-    </tbody>
-  </table>
+    <li class="hdr">What the CSP did after the job was already finished</li>
+    <li><span class="n">3,010</span><span class="lbl">accepted a card for work that was already closed</span></li>
+    <li class="star"><span class="n">1,078</span><span class="lbl">dispatched a technician to an already-resolved fault</span>
+      <span class="sub">the money number</span></li>
+    <li><span class="n">3,729</span><span class="lbl">received a TAS nudge on a dead card</span></li>
+
+    <li class="hdr">What the card looks like right now &mdash; 1,853 cards on the &ldquo;never marked&rdquo; branch</li>
+    <li class="bad"><span class="n">1,628</span><span class="lbl"><code>PENDING_ACCEPTANCE</code> &middot; <code>is_csp_actionable = true</code></span></li>
+    <li class="bad"><span class="n">111</span><span class="lbl"><code>ASSIGNED_TECHNICIAN</code> &middot; actionable</span></li>
+    <li class="bad"><span class="n">21</span><span class="lbl"><code>ACCEPTED</code> &middot; actionable</span></li>
+    <li class="quiet"><span class="n">93</span><span class="lbl">COMPLETED or CANCELLED</span>
+      <span class="sub">&rarr; <b>1,760 live, actionable cards for work that no longer exists</b></span></li>
+
+    <li class="hdr">What Quality received</li>
+    <li class="bad"><span class="n">1,770</span><span class="lbl">no <code>COMPLAINT_RESOLUTION_SIGNAL</code> emitted at all</span></li>
+    <li class="quiet"><span class="n">1,373</span><span class="lbl">SLA-breach facts emitted into a void &mdash; no producer or consumer (F-03)</span></li>
+    <li class="star"><span class="n">410</span><span class="lbl">TAT breaches scored against a CSP who was in fact on time</span></li>
+  </ul>
   </div>
-
-  <p class="note warn"><b>The clock really never stops.</b> Of the 1,857 class-B tickets, SRS shows
-  only <b>83</b> as <code>CLOSED</code>. The other 1,774 are still open &mdash; complaints raised
-  in August, closed in Kapture weeks ago, with 1,628 of their cards sitting on a CSP's phone
-  marked <code>PENDING_ACCEPTANCE &middot; is_csp_actionable = true</code>.</p>
 </section>
 
 <section class="sec">
-  <div class="sec-head"><span class="sec-num">04</span><h2>The four questions, answered</h2></div>
+  <div class="sec-head"><span class="sec-num">04</span><h2>The CSP population</h2></div>
+
+  <div class="tree">
+  <ul>
+    <li><span class="n">969</span><span class="lbl">CSPs in the cohort</span>
+      <ul>
+        <li><span class="n">737</span><span class="pc">76%</span><span class="lbl">hit the gap at least once</span>
+          <ul>
+            <li class="bad"><span class="n">216</span><span class="lbl">carry ≥1 unfairly-scored breach</span>
+              <ul>
+                <li class="quiet"><span class="n">137</span><span class="lbl">exactly 1</span></li>
+                <li class="quiet"><span class="n">43</span><span class="lbl">exactly 2</span></li>
+                <li class="quiet"><span class="n">25</span><span class="lbl">3 or 4</span></li>
+                <li class="quiet"><span class="n">11</span><span class="lbl">5 or more</span></li>
+              </ul>
+            </li>
+            <li class="quiet"><span class="n">521</span><span class="lbl">hit the gap but were never unfairly scored for it</span></li>
+          </ul>
+        </li>
+        <li class="quiet"><span class="n">232</span><span class="lbl">never hit it</span></li>
+      </ul>
+    </li>
+
+    <li class="hdr">How much fixing this moves a CSP's score &mdash; 536 CSPs with ≥20 adjudicated tickets</li>
+    <li class="quiet"><span class="n">509</span><span class="lbl">move less than 5 pp</span>
+      <span class="sub">the median CSP moves <b>0.00 pp</b></span></li>
+    <li class="quiet"><span class="n">24</span><span class="lbl">move 5&ndash;10 pp</span></li>
+    <li><span class="n">3</span><span class="lbl">move 10 pp or more (max 18.2 pp)</span></li>
+
+    <li class="hdr">How much of a CSP's closing the CC agent is doing &mdash; 562 CSPs with ≥20 tickets</li>
+    <li class="quiet"><span class="n">495</span><span class="lbl">under 25% agent-closed</span>
+      <span class="sub">the median CSP sits at <b>4.8%</b></span></li>
+    <li class="quiet"><span class="n">31</span><span class="lbl">25&ndash;50%</span></li>
+    <li class="star"><span class="n">36</span><span class="lbl">over 50% &mdash; and ~100% for the worst of them</span>
+      <span class="sub">these CSPs never close in the app at all. Separate problem; the sync fix does
+      not rescue them (worst case: 2.5% &rarr; 13.8% within-TAT, still failing).</span></li>
+  </ul>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sec-head"><span class="sec-num">05</span><h2>The four questions, answered</h2></div>
 
   <div class="q">
     <h3 class="q-h"><span class="qn">Q1</span>How many tickets are closed from Kapture first vs the CSP?</h3>
-    <p><b>12.96% Kapture-first (5,526), 87.0% CSP-first (37,084).</b> See &sect;02. The
+    <p><b>12.96% Kapture-first (5,526), 87.0% CSP-first (37,085).</b> See &sect;02. The
     CSP&rarr;Kapture leg is confirmed working &mdash; median propagation +0.02 min, P95 +0.03 min
     &mdash; so this is a one-directional gap, exactly as the code says (F-18:
     <code>SrsClient</code> has only <code>notifyComplaint</code> and
@@ -253,7 +353,7 @@
 </section>
 
 <section class="sec">
-  <div class="sec-head"><span class="sec-num">05</span><h2>What it looks like on one ticket</h2></div>
+  <div class="sec-head"><span class="sec-num">06</span><h2>What it looks like on one ticket</h2></div>
 
   <p class="lede">Five consecutive sync-loss tickets from 12 Aug 2026, spot-checked end to end.
   All times IST. All five carry SRS <code>STATUS = CLOSED</code>,
@@ -285,7 +385,7 @@
 </section>
 
 <section class="sec">
-  <div class="sec-head"><span class="sec-num">06</span><h2>What this measurement cannot tell you</h2></div>
+  <div class="sec-head"><span class="sec-num">07</span><h2>What this measurement cannot tell you</h2></div>
   <ul>
     <li><b>Nothing before mid-July 2026.</b> The closing actor is identified by two sentinel ids
       (<code>1234567890</code> = CSP/SRS path, <code>137439087976</code> = Kapture webhook) that
