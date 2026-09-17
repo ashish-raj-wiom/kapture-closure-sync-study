@@ -1,0 +1,62 @@
+WITH cohort AS (
+  SELECT TICKET_ID, CURRENT_PARTNER_ACCOUNT_ID AS partner_id, TICKET_SOURCE,
+         DATEADD(MINUTE,330, TICKET_ADDED_TIME::TIMESTAMP_NTZ) AS kap_added
+  FROM PROD_DB.PUBLIC.SERVICE_TICKET_MODEL
+  WHERE LAST_TITLE ILIKE 'Internet Issues%' AND IS_PARTNERASSIGNED=1
+    AND REGEXP_LIKE(TICKET_ID,'^[0-9]+$')
+    AND DATE(DATEADD(MINUTE,330, TICKET_ADDED_TIME::TIMESTAMP_NTZ)) BETWEEN '2026-08-11' AND '2026-09-10'
+  QUALIFY ROW_NUMBER() OVER (PARTITION BY TICKET_ID ORDER BY TICKET_ADDED_TIME DESC)=1
+),
+ev AS (
+  SELECT DISTINCT l.TASK_ID, l.EVENT_NAME, DATEADD(MINUTE,330,l.ADDED_TIME) AS ts,
+         TRY_PARSE_JSON(l.DATA):updated_by::VARCHAR AS ub
+  FROM PROD_DB.PUBLIC.TICKET_LOGS l JOIN cohort c ON c.TICKET_ID = l.TASK_ID
+  WHERE l.EVENT_NAME = 'TICKET_RESOLVED'
+    AND DATE(DATEADD(MINUTE,330, l.ADDED_TIME)) BETWEEN '2026-08-11' AND '2026-09-17'
+),
+per_ticket AS (
+  SELECT TASK_ID,
+         MIN(CASE WHEN ub='137439087976' THEN ts END) AS first_kap_agent,
+         MIN(CASE WHEN ub='1234567890'   THEN ts END) AS first_csp_app,
+         MAX(CASE WHEN ub='1234567890'   THEN ts END) AS last_csp_app
+  FROM ev GROUP BY 1
+),
+srs AS (
+  SELECT TICKET_ID, CSP_ID, SECONDARY_SUBTYPE, WITHIN_TAT, STATUS AS srs_status,
+         CONVERT_TIMEZONE('Asia/Kolkata', SLA_AT)::TIMESTAMP_NTZ      AS srs_sla,
+         CONVERT_TIMEZONE('Asia/Kolkata', RESOLVED_AT)::TIMESTAMP_NTZ AS srs_resolved
+  FROM PROD_DB.CSP_SUPPORT_RESOLUTION_SERVICE_CSP_SUPPORT_RESOLUTION_SERVICE.COMPLAINTS
+  WHERE _FIVETRAN_ACTIVE AND TICKET_ID IS NOT NULL AND REGEXP_LIKE(TICKET_ID,'^[0-9]+$')
+  QUALIFY ROW_NUMBER() OVER (PARTITION BY TICKET_ID ORDER BY CREATED_AT ASC, VERSION ASC, COMPLAINT_ID ASC)=1
+),
+ncomp AS (
+  SELECT TICKET_ID, COUNT(DISTINCT COMPLAINT_ID) n
+  FROM PROD_DB.CSP_SUPPORT_RESOLUTION_SERVICE_CSP_SUPPORT_RESOLUTION_SERVICE.COMPLAINTS
+  WHERE _FIVETRAN_ACTIVE AND TICKET_ID IS NOT NULL GROUP BY 1
+),
+j AS (
+  SELECT c.TICKET_ID, c.kap_added, s.CSP_ID, s.srs_sla, s.srs_resolved, s.WITHIN_TAT,
+         s.SECONDARY_SUBTYPE, s.srs_status, COALESCE(n.n,0) AS n_complaints,
+         p.first_kap_agent, p.first_csp_app,
+         CASE
+           WHEN p.first_kap_agent IS NULL AND p.first_csp_app IS NOT NULL THEN 'A_csp_only'
+           WHEN p.first_kap_agent IS NOT NULL AND p.first_csp_app IS NULL THEN 'B_kapture_only_csp_never_marked'
+           WHEN p.first_kap_agent IS NOT NULL AND p.first_csp_app IS NOT NULL
+                AND p.first_kap_agent < p.first_csp_app THEN 'C_kapture_first_then_csp'
+           WHEN p.first_kap_agent IS NOT NULL AND p.first_csp_app IS NOT NULL THEN 'D_csp_first_then_kapture'
+           ELSE 'E_no_resolve_event' END AS cls,
+         DATEDIFF('second', p.first_kap_agent, p.first_csp_app)/3600.0 AS lag_hrs
+  FROM cohort c
+  LEFT JOIN per_ticket p ON p.TASK_ID = c.TICKET_ID
+  LEFT JOIN srs   s ON s.TICKET_ID = c.TICKET_ID
+  LEFT JOIN ncomp n ON n.TICKET_ID = c.TICKET_ID
+)
+SELECT cls, COUNT(*) tickets, ROUND(100.0*COUNT(*)/SUM(COUNT(*)) OVER (),2) pct,
+       COUNT(DISTINCT CSP_ID) csps,
+       SUM(CASE WHEN n_complaints<=1 THEN 1 ELSE 0 END) single_complaint,
+       ROUND(AVG(CASE WHEN WITHIN_TAT=1 THEN 100.0 WHEN WITHIN_TAT=0 THEN 0 END),1) pct_within_tat,
+       SUM(CASE WHEN WITHIN_TAT IS NULL THEN 1 ELSE 0 END) tat_null,
+       SUM(CASE WHEN srs_status<>'CLOSED' OR srs_status IS NULL THEN 1 ELSE 0 END) srs_not_closed,
+       ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY lag_hrs),2) lag_p50_hrs,
+       ROUND(PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY lag_hrs),2) lag_p90_hrs
+FROM j GROUP BY 1 ORDER BY 1

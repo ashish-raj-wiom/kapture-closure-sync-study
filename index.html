@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kapture Closure Sync — Problem Sizing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#FBFBFA; --surface:#FFFFFF; --surface-alt:#F3F4F6;
+    --ink:#16191D; --ink-soft:#3E444C; --slate:#6A717B; --slate-light:#9AA1AB;
+    --rule:#E2E4E8; --rule-soft:#EFF0F2;
+    --accent:#8A5A12; --accent-wash:#FBF4E7;
+    --crit:#A32219; --crit-wash:#FCEEEC;
+    --future:#1F4E9C; --future-wash:#EEF3FC;
+    --good:#2F6B3A; --good-wash:#EDF5EE;
+    --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --serif:"Source Serif 4",Georgia,serif;
+    color-scheme:light;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:0 30px 70px}
+  header{padding:46px 0 0}
+  .label{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+  h1{font-size:clamp(1.7rem,3.8vw,2.35rem);font-weight:700;letter-spacing:-.025em;line-height:1.12;margin:0 0 12px}
+  .sub{font-family:var(--serif);font-size:1.08rem;line-height:1.5;color:var(--ink-soft);max-width:62ch;margin:0 0 20px}
+  .by{font-size:12.5px;color:var(--slate);padding-bottom:22px;border-bottom:1px solid var(--rule)}
+  .by a{color:var(--future);text-decoration:none}
+  h2{font-size:1.18rem;font-weight:650;letter-spacing:-.015em;margin:0}
+  .sec{margin:46px 0 0}
+  .sec-head{display:flex;align-items:baseline;gap:13px;padding-bottom:10px;border-bottom:2px solid var(--ink);margin-bottom:20px}
+  .sec-num{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.08em}
+  .lede{font-family:var(--serif);font-size:1rem;color:var(--ink-soft);max-width:68ch;margin:0 0 22px}
+  .verdict{font-family:var(--serif);font-size:1.18rem;line-height:1.5;border-left:3px solid var(--accent);padding:2px 0 2px 22px;max-width:64ch;margin:0 0 24px}
+  .verdict b{font-weight:600;color:var(--ink)}
+  table{width:100%;border-collapse:collapse;font-size:.87rem}
+  th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--slate);padding:0 14px 8px 0;border-bottom:1.5px solid var(--rule)}
+  td{padding:11px 14px 11px 0;border-bottom:1px solid var(--rule-soft);vertical-align:top;line-height:1.45}
+  td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  tr.hi td{background:var(--crit-wash)}
+  tr.tot td{font-weight:650;border-bottom:none}
+  .tw{overflow-x:auto}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px;margin:0 0 24px}
+  .kpi{background:var(--surface);border:1px solid var(--rule);border-top:3px solid var(--crit);border-radius:8px;padding:15px 17px}
+  .kpi.blue{border-top-color:var(--future)}
+  .kpi .k{font-size:1.5rem;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;display:block;line-height:1.1}
+  .kpi .kl{font-size:.79rem;color:var(--slate);line-height:1.4;display:block;margin-top:5px}
+  .note{font-size:.85rem;color:var(--ink-soft);background:var(--accent-wash);border-radius:7px;padding:11px 15px;margin-top:18px;max-width:74ch}
+  .note b{color:var(--accent)}
+  .warn{background:var(--crit-wash)}
+  .warn b{color:var(--crit)}
+  .q{margin:0 0 26px}
+  .q-h{font-size:.95rem;font-weight:650;margin:0 0 7px;display:flex;gap:9px;align-items:baseline}
+  .q-h span.qn{font-size:.76rem;font-weight:700;color:var(--accent);letter-spacing:.06em}
+  .q p{font-size:.89rem;color:var(--ink-soft);margin:0 0 9px;max-width:76ch;line-height:1.55}
+  .q p b{color:var(--ink);font-weight:620}
+  ul{margin:0 0 10px;padding-left:17px;font-size:.88rem;line-height:1.52;color:var(--ink-soft)}
+  li{margin-bottom:4px}
+  li:last-child{margin-bottom:0}
+  li b{color:var(--ink);font-weight:620}
+  .bar{display:flex;height:26px;border-radius:5px;overflow:hidden;margin:0 0 8px;border:1px solid var(--rule)}
+  .bar div{display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:650;color:#fff;white-space:nowrap}
+  .bcap{font-size:.78rem;color:var(--slate);margin:0 0 22px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+  .chip{font-size:.775rem;font-weight:550;padding:3px 9px;border-radius:5px;line-height:1.35}
+  .chip.gapc{background:var(--crit-wash);color:var(--crit);border:1px solid #F0D2CE}
+  .chip.live{background:var(--good-wash);color:var(--good);border:1px solid #CFE3D3}
+  .chip.todo{background:var(--surface-alt);color:var(--slate);border:1px dashed var(--rule)}
+  .close{margin-top:38px;padding:18px 22px;background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:8px}
+  .close p{font-family:var(--serif);font-size:1.02rem;line-height:1.55;color:var(--ink-soft);margin:0 0 10px;max-width:74ch}
+  .close p:last-child{margin-bottom:0}
+  .close b{color:var(--ink)}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:var(--surface-alt);padding:1px 5px;border-radius:4px}
+  .fnote{font-size:.8rem;color:var(--slate);line-height:1.5;max-width:76ch;margin:14px 0 0}
+  @media (max-width:620px){.wrap{padding:0 16px 50px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="label">Service Tickets POD &middot; Problem sizing</div>
+  <h1>A closure made in Kapture never reaches the CSP's card</h1>
+  <p class="sub">How big is it, who does it hurt, and is it worth solving? Roadmap item 01,
+  problem 6 &mdash; measured against production data, 11&nbsp;Aug&nbsp;&ndash;&nbsp;10&nbsp;Sep&nbsp;2026.</p>
+  <div class="by">Ashish Raj &middot; PM, Service Tickets POD &middot; 17 Sep 2026 &middot;
+    <a href="https://ashish-raj-wiom.github.io/service-tickets-roadmap/">roadmap</a></div>
+</header>
+
+<section class="sec">
+  <div class="sec-head"><span class="sec-num">01</span><h2>Verdict</h2></div>
+
+  <p class="verdict">Build it &mdash; but <b>not</b> on the TAT penalty. The gap is real and
+  growing fast: <b>12.96% of tickets are closed in Kapture before the CSP</b>, and that share
+  went <b>9.4% &rarr; 14.2% in a single month</b>. But removing every unfairly-scored breach moves
+  the platform within-TAT rate by <b>1.01 points</b> and moves the median affected CSP by
+  <b>zero</b>. The real cost is operational waste &mdash; and it is large.</p>
+
+  <div class="kpis">
+    <div class="kpi"><span class="k">1,078</span><span class="kl">technicians dispatched per month to a fault already closed in Kapture</span></div>
+    <div class="kpi"><span class="k">1,774</span><span class="kl">complaints a month that never close at all &mdash; mean age 21 days, clock still running</span></div>
+    <div class="kpi"><span class="k">1,760</span><span class="kl">live, CSP-actionable cards a month for work that no longer exists</span></div>
+    <div class="kpi blue"><span class="k">+1.01<span style="font-size:.6em">pp</span></span><span class="kl">all the TAT fairness this fix buys, platform-wide</span></div>
+  </div>
+
+  <p class="lede">The study was commissioned on the premise that CSPs are being penalised in
+  Quality for a sync failure. That premise is true, and it is small. What the data found instead is
+  thousands of CSP actions and technician trips spent on jobs that were already finished, and a
+  growing pile of complaints that no system will ever close.</p>
+</section>
+
+<section class="sec">
+  <div class="sec-head"><span class="sec-num">02</span><h2>Who closes the ticket</h2></div>
+
+  <p class="lede">The CSP &rarr; Kapture direction works and is effectively instant &mdash; median
+  propagation <b>one second</b>. So the order of a closure is unambiguous in the data. The reverse
+  direction does not exist: a Kapture closure reaches nothing.</p>
+
+  <div class="bar">
+    <div style="width:84.5%;background:#2F6B3A">A &middot; CSP closed &mdash; 84.5%</div>
+    <div style="width:8.1%;background:#A32219">C &middot; 8.1%</div>
+    <div style="width:4.8%;background:#7A1A13">B &middot; 4.8%</div>
+    <div style="width:2.6%;background:#9AA1AB">D+E</div>
+  </div>
+  <p class="bcap">42,626 partner-assigned Internet Issues tickets &middot; 969 CSPs &middot; 11 Aug &ndash; 10 Sep 2026</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Class</th><th>Tickets</th><th>Share</th><th>CSPs</th><th>Within TAT</th><th>What happened</th></tr></thead>
+    <tbody>
+      <tr><td><b>A</b></td><td class="num">36,034</td><td class="num">84.5%</td><td class="num">883</td><td class="num">81.1%</td><td>CSP closed it. Propagated to Kapture in ~1s. Working as designed.</td></tr>
+      <tr class="hi"><td><b>C</b></td><td class="num">3,467</td><td class="num">8.1%</td><td class="num">640</td><td class="num"><b>26.9%</b></td><td>Kapture closed first; CSP marked it a median <b>15.2 h</b> later (P90 <b>4.1 days</b>)</td></tr>
+      <tr class="hi"><td><b>B</b></td><td class="num">2,059</td><td class="num">4.8%</td><td class="num">254</td><td class="num">&mdash;</td><td>Kapture closed it; the CSP <b>never</b> marked it. 95.5% still open in SRS.</td></tr>
+      <tr><td><b>D</b></td><td class="num">1,050</td><td class="num">2.5%</td><td class="num">428</td><td class="num">69.8%</td><td>CSP closed first, agent closure later &mdash; reopen cycles</td></tr>
+      <tr><td><b>E</b></td><td class="num">16</td><td class="num">0.04%</td><td class="num">15</td><td class="num">&mdash;</td><td>no resolution event at all</td></tr>
+      <tr class="tot"><td>B + C</td><td class="num">5,526</td><td class="num">12.96%</td><td class="num">737 touched</td><td></td><td><b>Closed in Kapture before the CSP</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p class="note"><b>Growing.</b> On matched day 1&ndash;10 windows, the Kapture-first share of
+  resolved tickets went <b>9.43% (August) &rarr; 14.24% (September)</b>. It cannot be measured
+  before mid-July 2026 &mdash; the .NET&rarr;Java rewrite of ticket-service is what made the
+  closing actor identifiable at all, so any series starting earlier shows a jump from zero that is
+  instrumentation, not behaviour.</p>
+</section>
+
+<section class="sec">
+  <div class="sec-head"><span class="sec-num">03</span><h2>What it actually costs</h2></div>
+
+  <p class="lede">Measured on the 5,526 tickets Kapture closed first &mdash; what the CSP and the
+  platform did <em>after</em> the work was already finished and confirmed with the customer.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Wasted action, per month</th><th>Count</th><th>Of what</th></tr></thead>
+    <tbody>
+      <tr class="hi"><td><b>Technician dispatched to an already-resolved fault</b></td><td class="num">1,078</td><td>1,019 class C + 59 class B</td></tr>
+      <tr><td>CSP accepted a card for already-closed work</td><td class="num">3,010</td><td>83.8% of class C</td></tr>
+      <tr><td>TAS nudge / attention fired on a dead card</td><td class="num">3,729</td><td>99.8% of class C got at least one</td></tr>
+      <tr class="hi"><td><b>Live, actionable cards for closed work</b></td><td class="num">1,760</td><td>1,628 never even accepted</td></tr>
+      <tr class="hi"><td><b>Complaints that never close in SRS</b></td><td class="num">1,774</td><td>mean age <b>506 h / 21 days</b>, clock still running</td></tr>
+      <tr><td>Quality resolution signals never emitted</td><td class="num">1,770</td><td>of 1,857 class-B tickets</td></tr>
+      <tr><td>SLA-breach facts emitted into a void</td><td class="num">1,373</td><td>no registered producer or consumer (F-03)</td></tr>
+      <tr><td>TAT breaches scored against a CSP who was in fact on time</td><td class="num">410</td><td>393 confirmed in the Quality ledger</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p class="note warn"><b>The clock really never stops.</b> Of the 1,857 class-B tickets, SRS shows
+  only <b>83</b> as <code>CLOSED</code>. The other 1,774 are still open &mdash; complaints raised
+  in August, closed in Kapture weeks ago, with 1,628 of their cards sitting on a CSP's phone
+  marked <code>PENDING_ACCEPTANCE &middot; is_csp_actionable = true</code>.</p>
+</section>
+
+<section class="sec">
+  <div class="sec-head"><span class="sec-num">04</span><h2>The four questions, answered</h2></div>
+
+  <div class="q">
+    <h3 class="q-h"><span class="qn">Q1</span>How many tickets are closed from Kapture first vs the CSP?</h3>
+    <p><b>12.96% Kapture-first (5,526), 87.0% CSP-first (37,084).</b> See &sect;02. The
+    CSP&rarr;Kapture leg is confirmed working &mdash; median propagation +0.02 min, P95 +0.03 min
+    &mdash; so this is a one-directional gap, exactly as the code says (F-18:
+    <code>SrsClient</code> has only <code>notifyComplaint</code> and
+    <code>notifyReopenComplaint</code>; no close call exists).</p>
+  </div>
+
+  <div class="q">
+    <h3 class="q-h"><span class="qn">Q2</span>Of Kapture-closed tickets, does the CSP mark them &mdash; and before or after TAT?</h3>
+    <ul>
+      <li><b>62.7% (3,467/5,526)</b> are eventually marked by the CSP. <b>37.3% (2,059)</b> never are.</li>
+      <li>Lag from Kapture closure to CSP mark: <b>median 15.2 h &middot; P90 97.7 h (4.1 days)</b>.</li>
+      <li>Kapture's own closure was inside TAT on <b>1,319 of 3,464 (38.1%)</b> class-C tickets;
+          the CSP's mark was inside TAT on <b>924 (26.7%)</b>.</li>
+      <li>When the CSP marks late, they overshoot the deadline by a <b>median 25.1 h</b>.</li>
+    </ul>
+    <p><b>The number that matters, and it cuts against the premise:</b> <b>61.9% of class-C tickets
+    were already past TAT when the agent closed them.</b> For those the missing sync did not cause
+    the breach &mdash; the CSP was late regardless. Pure sync loss, where Kapture closed inside the
+    deadline and the CSP's mark landed outside it, is <b>535 tickets a month &mdash; 1.26% of the
+    cohort</b>.</p>
+  </div>
+
+  <div class="q">
+    <h3 class="q-h"><span class="qn">Q3</span>How many CSPs are impacted in Quality?</h3>
+    <div class="chips">
+      <span class="chip gapc">737 / 969 CSPs hit the gap at least once</span>
+      <span class="chip gapc">216 carry &ge;1 unfair breach</span>
+      <span class="chip todo">79 carry &ge;2 &middot; 11 carry &ge;5</span>
+      <span class="chip live">median swing if fixed: 0.00 pp</span>
+    </div>
+    <p>Verified against the actual scoring input,
+    <code>COMPLAINT_RESOLUTION_LEDGER</code>: of the 395 class-C sync-loss tickets, <b>393 are
+    scored <code>RESOLVED_WITHIN_TAT = FALSE</code> and none are
+    <code>EXCLUDED_FROM_SCORING</code></b>. The penalty is real. It is also rare &mdash; among the
+    536 CSPs with &ge;20 adjudicated tickets, the median gains 0.00 pp, P90 gains 3.45 pp, and only
+    <b>3</b> gain 10 pp or more.</p>
+    <p class="note"><b>A bigger problem is hiding here.</b> <b>36 CSPs have ~100% of their tickets
+    closed by the CC agent</b> &mdash; they never close in the app at all; 67 are above 25%,
+    against a median of 4.8%. For them the sync fix is not a rescue: the worst case (203 tickets)
+    goes from 2.5% to 13.8% within-TAT and is still failing. That is an app-adoption problem
+    wearing this problem's clothes, and it needs its own look.</p>
+  </div>
+
+  <div class="q">
+    <h3 class="q-h"><span class="qn">Q4</span>What is the uptick? Does CSP CSAT improve?</h3>
+    <p><b>CSAT cannot be estimated today &mdash; and that is a finding, not a hedge.</b> The
+    customer-rating pipeline (539k historical ticket ratings, mean 4.55) <b>died on 7 Jul
+    2026</b>, and the actor id needed to classify a closure only exists <b>from mid-Jul 2026</b>.
+    The two windows do not overlap, so <b>0 of 42,626</b> cohort tickets carry a rating. Repairing
+    that connector is a prerequisite for any CSAT claim &mdash; here or anywhere else in CX.</p>
+    <p>What is measurable is the waste table in &sect;03. And one piece of counter-evidence that
+    makes the case <em>stronger</em>:</p>
+    <div class="tw">
+    <table>
+      <thead><tr><th>Closure class</th><th>Tickets</th><th>Reopened</th><th>Reopen rate</th></tr></thead>
+      <tbody>
+        <tr><td>A &middot; CSP closed it</td><td class="num">36,034</td><td class="num">4,536</td><td class="num"><b>12.59%</b></td></tr>
+        <tr><td>C &middot; Kapture first, CSP later</td><td class="num">3,467</td><td class="num">334</td><td class="num">9.63%</td></tr>
+        <tr><td>B &middot; Kapture only</td><td class="num">2,059</td><td class="num">52</td><td class="num"><b>2.53%</b></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Tickets the CC agent closed <b>reopen less</b> than tickets the CSP closed. The agent closes
+    after confirming with the customer; the CSP closes on their own assertion, which no validation
+    can currently block (F-01). So propagating a Kapture closure is not trading accuracy for speed
+    &mdash; on the only outcome measure we have, it is propagating the <b>more reliable</b> of the
+    two signals.</p>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sec-head"><span class="sec-num">05</span><h2>What this measurement cannot tell you</h2></div>
+  <ul>
+    <li><b>Nothing before mid-July 2026.</b> The closing actor is identified by two sentinel ids
+      (<code>1234567890</code> = CSP/SRS path, <code>137439087976</code> = Kapture webhook) that
+      the .NET&rarr;Java rewrite introduced. July is half-instrumented; <b>August is the first
+      trustworthy month</b>.</li>
+    <li><b>Internet Issues only.</b> Shifting and installation-defect classes are unmeasured, and
+      shifting emits no Quality signal at all by design (F-05).</li>
+    <li><b>No CSAT, no ticket comments.</b> Both DynamoDB connectors stopped on 7 Jul 2026.</li>
+    <li><b>Reopens.</b> 9.7% of tickets carry more than one complaint; the first complaint's SLA is
+      used. Splitting single from multi does not change the conclusion.</li>
+    <li><b>Kapture's resolver-identity columns are broken</b> and were not used:
+      <code>CLOSED_BY</code> is 100% NULL, <code>FIRST_RESOLVED_ROLE</code> is the literal string
+      <code>'rohit'</code> on every row, and <code>FIRST_RESOLVED_BY_ACCOUNT_ID</code> always
+      equals the assigned partner. The whole measurement had to be rebuilt from the event log.</li>
+  </ul>
+</section>
+
+<div class="close">
+  <p><b>Recommendation.</b> Build the Kapture&rarr;SRS closure webhook. Justify it on <b>1,078
+  wasted technician dispatches</b> and <b>1,774 zombie complaints</b> a month, on a share growing
+  ~50% month-on-month, and on <b>1,770 Quality signals</b> that never fire. Carry the 410 unfair
+  breaches as a fairness sweetener, not as the headline &mdash; it is one point.</p>
+  <p>Spin out separately: the <b>36 CSPs who never close in the app</b>, and the <b>dead rating and
+  comment connectors</b>, which block CSAT measurement well beyond this problem.</p>
+</div>
+
+<p class="fnote">Every figure reproducible from <code>queries/</code> in the
+<code>kapture-closure-sync-study</code> project. Cohort, thresholds and rejected data sources in
+<code>notes/02-method.md</code>; findings F-19&hellip;F-24 in
+<code>notes/03-data-findings.md</code>. Source-of-truth order and terminology inherited from the
+SRS + TAS (Restore) study.</p>
+
+</div>
+</body>
+</html>
