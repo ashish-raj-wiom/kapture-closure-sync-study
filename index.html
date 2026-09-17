@@ -81,10 +81,11 @@
   .tree ul ul{padding-left:20px;border-left:1px solid var(--rule);margin-left:9px}
   .tree li{position:relative;padding:4px 0 4px 0;margin:0;font-size:.855rem;line-height:1.45;color:var(--ink-soft)}
   .tree ul ul>li::before{content:"";position:absolute;left:-20px;top:16px;width:14px;height:1px;background:var(--rule)}
-  .tree .n{display:inline-block;min-width:66px;font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink);text-align:right;margin-right:11px;font-size:.92rem}
-  .tree .pc{color:var(--slate);font-weight:500;font-size:.8rem;margin-right:8px;font-variant-numeric:tabular-nums}
+  .tree .n{display:inline-block;min-width:60px;font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink);text-align:right;margin-right:6px;font-size:.98rem}
+  .tree .ct{display:inline-block;min-width:60px;color:var(--slate);font-weight:500;font-size:.78rem;margin-right:12px;font-variant-numeric:tabular-nums;text-align:right}
   .tree .lbl{color:var(--ink)}
-  .tree .sub{display:block;margin-left:77px;font-size:.79rem;color:var(--slate);line-height:1.45}
+  .tree .sub{display:block;margin-left:138px;font-size:.79rem;color:var(--slate);line-height:1.45}
+  @media (max-width:620px){.tree .sub{margin-left:0}}
   .tree li.ok>.n{color:var(--good)}
   .tree li.bad>.n{color:var(--crit)}
   .tree li.star{background:var(--crit-wash);border-radius:6px;padding-left:8px;padding-right:10px;margin-left:-8px}
@@ -114,7 +115,7 @@
   <div class="sec-head"><span class="sec-num">01</span><h2>Verdict</h2></div>
 
   <p class="verdict">Build it &mdash; but <b>not</b> on the TAT penalty. The gap is real and
-  growing fast: <b>12.96% of tickets are closed in Kapture before the CSP</b>, and that share
+  growing fast: <b>12.97% of tickets are closed in Kapture before the CSP</b>, and that share
   went <b>9.4% &rarr; 14.2% in a single month</b>. But removing every unfairly-scored breach moves
   the platform within-TAT rate by <b>1.01 points</b> and moves the median affected CSP by
   <b>zero</b>. The real cost is operational waste &mdash; and it is large.</p>
@@ -141,59 +142,64 @@
 
   <div class="tree">
   <ul>
-    <li><span class="n">42,626</span><span class="lbl">tickets in scope</span>
-      <span class="sub">partner-assigned Internet Issues &middot; 969 CSPs &middot; raised 11 Aug &ndash; 10 Sep 2026</span>
+    <li><span class="n">100%</span><span class="ct">(42,611)</span><span class="lbl"><b>RESOLVED</b></span>
+      <span class="sub">partner-assigned Internet Issues &middot; 969 CSPs &middot; raised 11 Aug &ndash; 10 Sep 2026.
+        Base excludes 15 tickets with no resolution event at all.</span>
       <ul>
-        <li class="ok"><span class="n">37,085</span><span class="pc">87.0%</span><span class="lbl">CSP closed first &mdash; syncs to Kapture in ~1 second. Working as designed.</span>
-          <ul>
-            <li class="quiet"><span class="n">36,035</span><span class="lbl">CSP closed it, no agent involvement</span></li>
-            <li class="quiet"><span class="n">1,050</span><span class="lbl">CSP closed it, agent closure later (reopen cycles)</span></li>
-          </ul>
-        </li>
+        <li class="ok"><span class="n">87.03%</span><span class="ct">(37,085)</span><span class="lbl"><b>CSP FIRST</b></span>
+          <span class="sub">the CSP closed it; it reached Kapture in ~1 second. Working as designed.</span></li>
 
-        <li class="bad"><span class="n">5,526</span><span class="pc">13.0%</span><span class="lbl"><b>Kapture closed first</b> &mdash; the problem</span>
+        <li class="bad"><span class="n">12.97%</span><span class="ct">(5,526)</span><span class="lbl"><b>KAPTURE FIRST</b> &mdash; the problem</span>
           <ul>
-            <li><span class="n">3,467</span><span class="lbl">the CSP <b>did</b> mark it, but later</span>
-              <span class="sub">median <b>15.2 h</b> later &middot; P90 <b>97.7 h (4.1 days)</b></span>
+            <li><span class="n">3.42%</span><span class="ct">(1,459)</span><span class="lbl">agent closed it <b>within</b> the TAT</span>
+              <span class="sub">the issue was fixed and confirmed before the deadline</span>
               <ul>
-                <li class="quiet"><span class="n">3</span><span class="lbl">no SLA stamped &mdash; not adjudicable</span></li>
-                <li class="quiet"><span class="n">2,145</span><span class="lbl">agent closed it <b>after</b> the TAT had already passed</span>
-                  <span class="sub">the CSP was late anyway &mdash; not caused by the sync gap</span></li>
-                <li><span class="n">1,319</span><span class="lbl">agent closed it <b>inside</b> the TAT</span>
+                <li><span class="n">3.10%</span><span class="ct">(1,319)</span><span class="lbl">CSP did resolve it, later</span>
                   <ul>
-                    <li class="quiet"><span class="n">924</span><span class="lbl">CSP also marked inside the TAT &mdash; no harm done</span></li>
-                    <li class="star"><span class="n">395</span><span class="lbl">CSP marked late &mdash; UNFAIR BREACH</span>
-                      <span class="sub">393 of them scored <code>RESOLVED_WITHIN_TAT = false</code>, none excluded</span></li>
+                    <li class="quiet"><span class="n">2.17%</span><span class="ct">(924)</span><span class="lbl">&hellip;within the TAT &mdash; no harm done</span></li>
+                    <li class="star"><span class="n">0.93%</span><span class="ct">(395)</span><span class="lbl">&hellip;outside the TAT &mdash; UNFAIR BREACH</span>
+                      <span class="sub">393 scored <code>RESOLVED_WITHIN_TAT = false</code>, none excluded</span></li>
                   </ul>
                 </li>
-              </ul>
-            </li>
-
-            <li><span class="n">2,059</span><span class="lbl">the CSP <b>never</b> marked it at all</span>
-              <ul>
-                <li class="quiet"><span class="n">202</span><span class="lbl">never reached SRS &mdash; no CSP card ever existed (separate gap)</span></li>
-                <li class="quiet"><span class="n">4</span><span class="lbl">no SLA stamped</span></li>
-                <li class="quiet"><span class="n">1,713</span><span class="lbl">agent closed it <b>after</b> the TAT &mdash; already breached</span></li>
-                <li class="star"><span class="n">140</span><span class="lbl">agent closed it inside the TAT &mdash; UNFAIR</span>
+                <li class="star"><span class="n">0.33%</span><span class="ct">(140)</span><span class="lbl">CSP never resolved it &mdash; UNFAIR</span>
                   <span class="sub">17 scored as breached so far; the rest sit unadjudicated</span></li>
               </ul>
             </li>
+
+            <li><span class="n">9.05%</span><span class="ct">(3,858)</span><span class="lbl">agent closed it <b>outside</b> the TAT</span>
+              <span class="sub">already breached before the agent touched it &mdash; the sync gap did not
+                cause these, the CSP was late regardless</span>
+              <ul>
+                <li class="quiet"><span class="n">5.03%</span><span class="ct">(2,145)</span><span class="lbl">CSP did resolve it, later (necessarily outside TAT too)</span></li>
+                <li class="quiet"><span class="n">4.02%</span><span class="ct">(1,713)</span><span class="lbl">CSP never resolved it</span></li>
+              </ul>
+            </li>
+
+            <li class="quiet"><span class="n">0.49%</span><span class="ct">(209)</span><span class="lbl">no TAT to judge against</span>
+              <ul>
+                <li class="quiet"><span class="n">0.47%</span><span class="ct">(202)</span><span class="lbl">never reached SRS &mdash; no CSP card ever existed (separate gap)</span></li>
+                <li class="quiet"><span class="n">0.02%</span><span class="ct">(7)</span><span class="lbl">reached SRS but no SLA was stamped</span></li>
+              </ul>
+            </li>
           </ul>
         </li>
-
-        <li class="quiet"><span class="n">15</span><span class="lbl">no resolution event at all</span></li>
       </ul>
     </li>
   </ul>
   </div>
-  <p class="tcap">Every node from one query (<code>queries/tree-all-nodes.sql</code>) &mdash; the
-  leaves sum to 42,626 exactly.</p>
+  <p class="tcap">Every node from one query (<code>queries/tree-all-nodes.sql</code>). Leaves sum
+  to 100%.</p>
 
-  <p class="note warn"><b>The two shaded leaves are the whole injustice: 535 tickets a month.</b>
-  And the two &ldquo;after the TAT&rdquo; branches are why that is not 5,526 &mdash;
-  <b>3,858 tickets (70% of the Kapture-first population) were already late when the agent closed
-  them.</b> Fixing the sync does not save those. That single line is what separates the
-  <b>size of the gap (13.0%)</b> from the <b>size of the injustice (1.26%)</b>.</p>
+  <p class="note warn"><b>The two shaded leaves are the whole injustice: 1.26% (535).</b>
+  And the <b>9.05%</b> branch is why it is not 12.97% &mdash; <b>3,858 tickets, 70% of the entire
+  Kapture-first population, were already past their deadline when the agent closed them.</b>
+  Propagating the closure would not have saved one of them. That single branch is what separates
+  the <b>size of the gap (12.97%)</b> from the <b>size of the injustice (1.26%)</b>.</p>
+
+  <p class="note">Note the asymmetry between the two TAT branches. Under <b>agent within TAT</b>
+  the CSP's mark can land either side of the line, so it splits. Under <b>agent outside TAT</b> it
+  cannot &mdash; the CSP always marks after the agent, so all 2,145 are outside the TAT by
+  construction.</p>
 
   <p class="note"><b>Growing.</b> On matched day 1&ndash;10 windows, the Kapture-first share of
   resolved tickets went <b>9.43% (August) &rarr; 14.24% (September)</b>. It cannot be measured
@@ -204,33 +210,43 @@
 
 <section class="sec">
   <div class="sec-head"><span class="sec-num">03</span><h2>What the gap leaves behind</h2></div>
-  <p class="lede">The same 5,526 tickets, cut by consequence instead of by blame.</p>
+  <p class="lede">The same tickets, cut by consequence instead of by blame. Only the first group
+  is a partition; the other two are overlapping views of the same population.</p>
 
   <div class="tree">
   <ul>
-    <li class="hdr">Where the SRS complaint ended up</li>
-    <li class="quiet"><span class="n">3,521</span><span class="lbl">eventually CLOSED &mdash; nearly all because the CSP marked it late</span></li>
-    <li class="bad"><span class="n">1,803</span><span class="lbl">still open &mdash; mean age <b>506 h (21 days)</b>, clock running</span>
-      <span class="sub">1,774 of these are the &ldquo;CSP never marked it&rdquo; branch: nobody is ever going to close them</span></li>
-    <li class="quiet"><span class="n">202</span><span class="lbl">never existed</span></li>
+    <li><span class="n">100%</span><span class="ct">(5,526)</span><span class="lbl"><b>TICKETS CLOSED IN KAPTURE BEFORE THE CSP</b></span></li>
+
+    <li class="hdr">Where the SRS complaint ended up &mdash; sums to 100%</li>
+    <li class="quiet"><span class="n">63.72%</span><span class="ct">(3,521)</span><span class="lbl">eventually CLOSED &mdash; nearly all because the CSP marked it late</span></li>
+    <li class="bad"><span class="n">32.63%</span><span class="ct">(1,803)</span><span class="lbl">still open &mdash; mean age <b>506 h (21 days)</b>, clock running</span>
+      <span class="sub">32.10% (1,774) of these are the &ldquo;CSP never marked it&rdquo; branch: nobody is ever going to close them</span></li>
+    <li class="quiet"><span class="n">3.66%</span><span class="ct">(202)</span><span class="lbl">never existed</span></li>
 
     <li class="hdr">What the CSP did after the job was already finished</li>
-    <li><span class="n">3,010</span><span class="lbl">accepted a card for work that was already closed</span></li>
-    <li class="star"><span class="n">1,078</span><span class="lbl">dispatched a technician to an already-resolved fault</span>
+    <li><span class="n">67.48%</span><span class="ct">(3,729)</span><span class="lbl">received a TAS nudge on a dead card</span></li>
+    <li><span class="n">54.47%</span><span class="ct">(3,010)</span><span class="lbl">accepted a card for work that was already closed</span></li>
+    <li class="star"><span class="n">19.51%</span><span class="ct">(1,078)</span><span class="lbl">dispatched a technician to an already-resolved fault</span>
       <span class="sub">the money number</span></li>
-    <li><span class="n">3,729</span><span class="lbl">received a TAS nudge on a dead card</span></li>
-
-    <li class="hdr">What the card looks like right now &mdash; 1,853 cards on the &ldquo;never marked&rdquo; branch</li>
-    <li class="bad"><span class="n">1,628</span><span class="lbl"><code>PENDING_ACCEPTANCE</code> &middot; <code>is_csp_actionable = true</code></span></li>
-    <li class="bad"><span class="n">111</span><span class="lbl"><code>ASSIGNED_TECHNICIAN</code> &middot; actionable</span></li>
-    <li class="bad"><span class="n">21</span><span class="lbl"><code>ACCEPTED</code> &middot; actionable</span></li>
-    <li class="quiet"><span class="n">93</span><span class="lbl">COMPLETED or CANCELLED</span>
-      <span class="sub">&rarr; <b>1,760 live, actionable cards for work that no longer exists</b></span></li>
 
     <li class="hdr">What Quality received</li>
-    <li class="bad"><span class="n">1,770</span><span class="lbl">no <code>COMPLAINT_RESOLUTION_SIGNAL</code> emitted at all</span></li>
-    <li class="quiet"><span class="n">1,373</span><span class="lbl">SLA-breach facts emitted into a void &mdash; no producer or consumer (F-03)</span></li>
-    <li class="star"><span class="n">410</span><span class="lbl">TAT breaches scored against a CSP who was in fact on time</span></li>
+    <li class="bad"><span class="n">32.03%</span><span class="ct">(1,770)</span><span class="lbl">no <code>COMPLAINT_RESOLUTION_SIGNAL</code> emitted at all</span></li>
+    <li class="quiet"><span class="n">24.85%</span><span class="ct">(1,373)</span><span class="lbl">SLA-breach facts emitted into a void &mdash; no producer or consumer (F-03)</span></li>
+    <li class="star"><span class="n">7.42%</span><span class="ct">(410)</span><span class="lbl">TAT breaches scored against a CSP who was in fact on time</span></li>
+  </ul>
+  </div>
+
+  <div class="tree">
+  <ul>
+    <li><span class="n">100%</span><span class="ct">(1,853)</span><span class="lbl"><b>CARDS ON THE &ldquo;CSP NEVER MARKED IT&rdquo; BRANCH</b></span>
+      <ul>
+        <li class="bad"><span class="n">87.86%</span><span class="ct">(1,628)</span><span class="lbl"><code>PENDING_ACCEPTANCE</code> &middot; <code>is_csp_actionable = true</code></span></li>
+        <li class="bad"><span class="n">5.99%</span><span class="ct">(111)</span><span class="lbl"><code>ASSIGNED_TECHNICIAN</code> &middot; actionable</span></li>
+        <li class="bad"><span class="n">1.13%</span><span class="ct">(21)</span><span class="lbl"><code>ACCEPTED</code> &middot; actionable</span></li>
+        <li class="quiet"><span class="n">5.02%</span><span class="ct">(93)</span><span class="lbl">COMPLETED or CANCELLED</span></li>
+      </ul>
+    </li>
+    <li class="star"><span class="n">94.98%</span><span class="ct">(1,760)</span><span class="lbl">are LIVE AND ACTIONABLE for work that no longer exists</span></li>
   </ul>
   </div>
 </section>
@@ -240,38 +256,52 @@
 
   <div class="tree">
   <ul>
-    <li><span class="n">969</span><span class="lbl">CSPs in the cohort</span>
+    <li><span class="n">100%</span><span class="ct">(969)</span><span class="lbl"><b>CSPs IN THE COHORT</b></span>
       <ul>
-        <li><span class="n">737</span><span class="pc">76%</span><span class="lbl">hit the gap at least once</span>
+        <li><span class="n">76.06%</span><span class="ct">(737)</span><span class="lbl">hit the gap at least once</span>
           <ul>
-            <li class="bad"><span class="n">216</span><span class="lbl">carry ≥1 unfairly-scored breach</span>
+            <li class="bad"><span class="n">22.29%</span><span class="ct">(216)</span><span class="lbl">carry &ge;1 unfairly-scored breach</span>
               <ul>
-                <li class="quiet"><span class="n">137</span><span class="lbl">exactly 1</span></li>
-                <li class="quiet"><span class="n">43</span><span class="lbl">exactly 2</span></li>
-                <li class="quiet"><span class="n">25</span><span class="lbl">3 or 4</span></li>
-                <li class="quiet"><span class="n">11</span><span class="lbl">5 or more</span></li>
+                <li class="quiet"><span class="n">14.14%</span><span class="ct">(137)</span><span class="lbl">exactly 1</span></li>
+                <li class="quiet"><span class="n">4.44%</span><span class="ct">(43)</span><span class="lbl">exactly 2</span></li>
+                <li class="quiet"><span class="n">2.58%</span><span class="ct">(25)</span><span class="lbl">3 or 4</span></li>
+                <li class="quiet"><span class="n">1.14%</span><span class="ct">(11)</span><span class="lbl">5 or more</span></li>
               </ul>
             </li>
-            <li class="quiet"><span class="n">521</span><span class="lbl">hit the gap but were never unfairly scored for it</span></li>
+            <li class="quiet"><span class="n">53.77%</span><span class="ct">(521)</span><span class="lbl">hit the gap but were never unfairly scored for it</span></li>
           </ul>
         </li>
-        <li class="quiet"><span class="n">232</span><span class="lbl">never hit it</span></li>
+        <li class="quiet"><span class="n">23.94%</span><span class="ct">(232)</span><span class="lbl">never hit it</span></li>
       </ul>
     </li>
+  </ul>
+  </div>
 
-    <li class="hdr">How much fixing this moves a CSP's score &mdash; 536 CSPs with ≥20 adjudicated tickets</li>
-    <li class="quiet"><span class="n">509</span><span class="lbl">move less than 5 pp</span>
-      <span class="sub">the median CSP moves <b>0.00 pp</b></span></li>
-    <li class="quiet"><span class="n">24</span><span class="lbl">move 5&ndash;10 pp</span></li>
-    <li><span class="n">3</span><span class="lbl">move 10 pp or more (max 18.2 pp)</span></li>
+  <div class="tree">
+  <ul>
+    <li><span class="n">100%</span><span class="ct">(536)</span><span class="lbl"><b>CSPs WITH &ge;20 ADJUDICATED TICKETS</b> &mdash; how much fixing this moves their score</span>
+      <ul>
+        <li class="quiet"><span class="n">94.96%</span><span class="ct">(509)</span><span class="lbl">move less than 5 pp</span>
+          <span class="sub">the median CSP moves <b>0.00 pp</b></span></li>
+        <li class="quiet"><span class="n">4.48%</span><span class="ct">(24)</span><span class="lbl">move 5&ndash;10 pp</span></li>
+        <li><span class="n">0.56%</span><span class="ct">(3)</span><span class="lbl">move 10 pp or more (max 18.2 pp)</span></li>
+      </ul>
+    </li>
+  </ul>
+  </div>
 
-    <li class="hdr">How much of a CSP's closing the CC agent is doing &mdash; 562 CSPs with ≥20 tickets</li>
-    <li class="quiet"><span class="n">495</span><span class="lbl">under 25% agent-closed</span>
-      <span class="sub">the median CSP sits at <b>4.8%</b></span></li>
-    <li class="quiet"><span class="n">31</span><span class="lbl">25&ndash;50%</span></li>
-    <li class="star"><span class="n">36</span><span class="lbl">over 50% &mdash; and ~100% for the worst of them</span>
-      <span class="sub">these CSPs never close in the app at all. Separate problem; the sync fix does
-      not rescue them (worst case: 2.5% &rarr; 13.8% within-TAT, still failing).</span></li>
+  <div class="tree">
+  <ul>
+    <li><span class="n">100%</span><span class="ct">(562)</span><span class="lbl"><b>CSPs WITH &ge;20 TICKETS</b> &mdash; how much of their closing the CC agent is doing</span>
+      <ul>
+        <li class="quiet"><span class="n">88.08%</span><span class="ct">(495)</span><span class="lbl">under 25% agent-closed</span>
+          <span class="sub">the median CSP sits at <b>4.8%</b></span></li>
+        <li class="quiet"><span class="n">5.52%</span><span class="ct">(31)</span><span class="lbl">25&ndash;50%</span></li>
+        <li class="star"><span class="n">6.41%</span><span class="ct">(36)</span><span class="lbl">over 50% &mdash; and ~100% for the worst of them</span>
+          <span class="sub">these CSPs never close in the app at all. Separate problem; the sync fix does
+          not rescue them (worst case: 2.5% &rarr; 13.8% within-TAT, still failing).</span></li>
+      </ul>
+    </li>
   </ul>
   </div>
 </section>
@@ -281,7 +311,7 @@
 
   <div class="q">
     <h3 class="q-h"><span class="qn">Q1</span>How many tickets are closed from Kapture first vs the CSP?</h3>
-    <p><b>12.96% Kapture-first (5,526), 87.0% CSP-first (37,085).</b> See &sect;02. The
+    <p><b>12.97% Kapture-first (5,526), 87.03% CSP-first (37,085).</b> See &sect;02. The
     CSP&rarr;Kapture leg is confirmed working &mdash; median propagation +0.02 min, P95 +0.03 min
     &mdash; so this is a one-directional gap, exactly as the code says (F-18:
     <code>SrsClient</code> has only <code>notifyComplaint</code> and

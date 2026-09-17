@@ -9,7 +9,7 @@ created 11 Aug – 10 Sep 2026 IST. 42,424 (99.5%) produced an SRS complaint. 96
 
 **Yes — but not for the reason the study was commissioned.**
 
-The gap is real, it is large, and it is growing fast: **12.96% of tickets (5,526/month) are closed
+The gap is real, it is large, and it is growing fast: **12.97% of tickets (5,526/month) are closed
 in Kapture before the CSP closes them**, and on matched windows that share went **9.43%
 (1–10 Aug) → 14.24% (1–10 Sep)** — roughly +50% in a month.
 
@@ -50,7 +50,7 @@ The CSP→Kapture direction works and is effectively instant: **median propagati
 | **D** CSP closed first, agent closure after (reopen cycles) | 1,050 | 2.5% | 428 | 69.8% |
 | **E** no resolution event | 16 | 0.04% | 15 | — |
 
-**Kapture-first = B + C = 5,526 (12.96%).** CSP-first = A + D = 37,085 (87.0%).
+**Kapture-first = B + C = 5,526 (12.97%).** CSP-first = A + D = 37,085 (87.0%).
 
 **Trend (matched d01–10 windows, % of *resolved* tickets):** Aug 9.43% → Sep 14.24%.
 ⚠ Cannot be measured before ~mid-Jul 2026 — see F-19. The apparent "0% before July" in
