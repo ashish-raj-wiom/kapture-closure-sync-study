@@ -48,6 +48,26 @@ event).
 **The two ★ leaves are the whole injustice: 1.26% (535) of everything resolved.** 410 of them are
 already scored as breached in `COMPLAINT_RESOLUTION_LEDGER`, none excluded from scoring.
 
+### What "the uptick" actually is — three numbers that all look like 1.2%
+
+These get conflated. They are not the same thing:
+
+| | Count | Base | Value |
+|---|---|---|---|
+| Tickets **wrongly treated** | 535 | 42,611 resolved | **1.26%** |
+| Of those, **actually scored** as a breach | 410 | 42,611 resolved | **0.96%** |
+| **Uptick in the within-TAT metric** | — | 40,586 *adjudicated* | **+1.01 pp** (76.09% → 77.10%) |
+
+The metric uptick is not 1.26% for two reasons: only 410 of the 535 carry a ledger verdict at all
+(the other 125 sit unadjudicated — neither passed nor failed), and the within-TAT denominator is
+the 40,586 adjudicated tickets, not all 42,611 resolved.
+
+Use **+1.01 pp** when talking about the Quality metric. Use **1.26%** when making the fairness
+argument, because it counts the 125 the scoring never reached. Never quote either as the benefit
+of the fix — it is the whole Quality benefit and excludes the 1,078 technician dispatches, the
+1,760 live dead cards and the 1,774 never-closing complaints, none of which appear in a TAT
+number.
+
 **The 9.05% branch is what kills the naive business case.** 3,858 tickets — **70% of the entire
 Kapture-first population** — were already past their deadline when the agent closed them.
 Propagating the closure would not have saved one of them. This is what separates the *size of the
