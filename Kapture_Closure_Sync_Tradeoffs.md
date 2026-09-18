@@ -10,7 +10,7 @@ answers it without archaeology.
 | 2 | What happens to the complaint | **Complaint and restore execution candidate both resolve at the agent's closure**, exactly as a CSP's own resolve would. The card stays visible; only ठीक है archives it. | (a) Clock stops but complaint stays open until the CSP confirms — leaves ~1,774 complaints/month open forever. (b) Auto-close after a window. (c) Close immediately with no acknowledgement step at all. | PM revised the design mid-interview to this shape. It closes the complaint (killing the zombies) while keeping the CSP's acknowledgement as a deliberate, separate step. | 17 Sep 2026 |
 | 3 | Quality attribution | **Agent's closure time is the resolution timestamp; the complaint stays on the CSP's scorecard.** | (a) Agent's time but the whole complaint attributed to Wiom. (b) Exclude these complaints from scoring entirely. | The CSP should be judged on when the fault was actually fixed. This is what converts the 410 wrongly-recorded breaches to on-time. | 17 Sep 2026 |
 | 3b | Who is recorded as having resolved it | **The CC agent, carrying that agent's own Kapture employee id.** Distinct from decision 3: the agent performed the resolution, the CSP still owns the TAT outcome. | (a) Record the CSP, as a CSP-initiated resolve does. (b) Record the shared system identity, as the ticket relay does today. | "We should be knowing that this ticket was resolved by CC agent instead of the CSP. Very important." The id already arrives as `ticketCloseEmpId` and is discarded, so this costs a field, not an integration. Answered 18 Sep: Quality still counts it and does not differentiate on who resolved it. It could not do otherwise — `ComplaintResolutionSignalEvent` carries no actor field at all, so the agent is recorded on the TAS candidate only. | 18 Sep 2026 |
-| 4 | If the CSP never taps ठीक है | **The card stays until tapped — forever, and active.** The 7-day feed window and 30-day retention stop applying to this card type, and it must not render greyed or unactionable. | (a) Auto-archive after a window. (b) Auto-archive at end of day. (c) Let the existing age windows retire it. | Acknowledgement is the CSP's to give: "Yes forever, no 7 days feed window — remove this. If the user does not click Okay, the card remains active in the app." **Known cost:** nothing ages out, so an unacknowledged card accumulates. The median CSP carries 2 such cards a month (24 a year) and will not notice; the tail will — the top CSP carries 240 a month, which is 2,880 in a year if none is ever tapped. That tail is the same ~36 CSPs who already never close in the app, so the accumulation lands hardest exactly where acknowledgement is least likely. | 18 Sep 2026 |
+| 4 | If the CSP never taps ठीक है | **The card stays active in the feed until tapped, or until C-03 (7 days, configurable), whichever comes first.** It must not render greyed or finished while it waits. | (a) Forever, with no window at all. (b) Auto-archive at end of day. (c) Today's behaviour, where age retires it silently. | Decided in two steps. First "yes forever, no 7-day window"; then, on seeing what accumulates, "if that's the case then keep a config of 7 days — let's not leave this hanging." The 7 days caps the heaviest CSP at roughly 56 cards in the feed instead of 2,880 a year, and the window is a config so it can move without a release. The card stays **active** throughout, deliberately: "I would need the card to be active for the CSP to acknowledge even if the issue has been resolved — that's an important part for the CSP to see that Wiom is proactive about it." | 18 Sep 2026 |
 | 5 | Feed ordering | **The card floats to the top.** | (a) Must never outrank a live fault — needs a TAS sort change. (b) A band beneath all live tickets. | Different from escalation: the trigger is the fault being fixed, not customer persistence, and the fastest action clears the card entirely. Checked deliberately against the principle that killed the Repeat Contact PRD. | 17 Sep 2026 |
 | 6 | The deadline block on a resolved card | **Whatever the app does today on a resolved restore** — countdown suppressed, block reads "आपकी तरफ से काम पूरा हो गया" / "Your work is complete". | (a) Keep the countdown as the mock showed. (b) Design a new completed state. | "Look what happens today when the ticket is resolved, do the same." The behaviour already exists (`RestoreDrilldownContent.kt:298-307`, `ScheduleSection.kt:57`), so the mock's live countdown is a mock artifact, not a requirement. | 17 Sep 2026 |
 | 7 | Telling the CSP outside the app | **Push notification on closure; the notification and a direct open land on the same screen carrying ठीक है.** | Not offered — PM supplied this directly. | — | 17 Sep 2026 |
@@ -37,13 +37,19 @@ raised 11 Aug – 10 Sep 2026.
 | Closures where a customer actually said it works | 138 — 2.5% | same |
 | Agent comment present within 30 min of closure | 5,525 of 5,526 — 99.98% | same |
 
-## Settled 18 Sep — the card never ages out
+## Settled 18 Sep — the card waits, but not for ever
 
-Decision 4 is now answered and the conflict with the platform is resolved in the feature's favour: the
-7-day inline feed window, the 30-day terminal retention and the greyed terminal rendering all stop
-applying to a resolved-unacknowledged card. Every other card type keeps today's behaviour
-(AC-REG-6). What remains open is only the two window values, C-01 and C-02, and the terminal-
-complaint hole below.
+Decision 4 landed in two steps and the second is the one that ships: a resolved-unacknowledged card
+stays **active** in the feed until the CSP taps ठीक है, or until C-03 (7 days, configurable) has
+passed, whichever comes first. The platform's existing 7-day inline feed window already provides
+that auto-archive, so C-03 names a behaviour TAS has rather than asking for a new timer.
+
+One genuine change to TAS remains: terminal cards render greyed with no actionable dot
+(`AggregationEngine.java:53,152`), which would leave ठीक है untappable. That rendering must be
+exempted for this card type — and it is the same change that makes Wiom's proactivity visible to
+the CSP, which is the point of keeping the card active at all.
+
+What remains open is the two window values, C-01 and C-02, and the terminal-complaint hole below.
 
 ## Still open
 
