@@ -3,7 +3,7 @@
 | | | | |
 |---|---|---|---|
 | **Owner** — Ashish Raj (PM) | **Reviewer** — [TBD — not asked] | **Status** — Draft | **Sign-off** — Pending |
-| **Version** — v0.1 · 17 Sep 2026 | **Consulted — Quality OS** — Akhil | **Consulted — Support/Ops** — [TBD — not asked] | **Consulted — TAS eng** — [TBD — not asked] |
+| **Version** — v0.2 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | **Consulted — Support/Ops** — [TBD — not asked] | **Consulted — TAS eng** — [TBD — not asked] |
 
 ---
 
@@ -30,12 +30,13 @@
 
 | ID | Story | MUST | MUST NOT |
 |---|---|---|---|
-| R1 | As a CSP, when Wiom has already closed my customer's ticket, I want the complaint closed on my behalf so that my card and my deadline stop, without me doing anything. | **(a)** On a Kapture-side closure of a partner-assigned Internet Issues ticket, resolve the open complaint, stamping the resolution at the moment the agent closed it in Kapture. **(b)** Resolve the matching restore execution candidate, to the same end state a CSP's own resolve produces. **(c)** Attribute the resolution to the CSP who held the card. **(d)** Emit exactly one resolution signal for the fault. ⚠️ *AI GENERATED — review*. | Resolve a complaint whose ticket was not closed in Kapture; resolve a second time when the closure is delivered again; leave the complaint open once the closure has been accepted. |
+| R1 | As a CSP, when Wiom has already closed my customer's ticket, I want the complaint closed on my behalf so that my card and my deadline stop, without me doing anything. | **(a)** On a Kapture-side closure of a partner-assigned Internet Issues ticket, resolve the open complaint, stamping the resolution at the moment the agent closed it in Kapture. **(b)** Resolve the matching restore execution candidate, to the same end state a CSP's own resolve produces. **(c)** Record the call-centre agent as the actor who resolved it, carrying that agent's own identity through from Kapture — never the CSP, and never a shared system identity. **(d)** Emit exactly one resolution signal for the fault. ⚠️ *AI GENERATED — review*. | Resolve a complaint whose ticket was not closed in Kapture; resolve a second time when the closure is delivered again; leave the complaint open once the closure has been accepted; record a resolution the CSP did not perform as though they performed it. |
 
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
-| AC-R1-1 | **Given** ticket 1786508079949000, complaint status `INTAKE`, `sla_at` = 2026-08-12T15:00 IST, and restore candidate state `PENDING_ACCEPTANCE`, **When** a Wiom agent closes that ticket in Kapture at 09:20:23 IST on 12 Aug, **Then** the complaint row reads `status` = CLOSED and `resolved_at` = 2026-08-12T09:20:23 IST, and the restore candidate reads `state` = COMPLETED. | R1a · R1b · G3 | Settled |
-| AC-R1-2 | **Given** the closure in AC-R1-1, **When** the Wiom agent's closure is accepted at 09:20:23, **Then** the candidate reads `resolved_by_actor_type` = CSP and `resolved_by_actor_id` = a0b6v6, the CSP who held the card — not a Wiom or system identity. | R1c | Settled |
+| AC-R1-1 | **Given** ticket 1786508079949000, complaint status `ASSIGNED`, `sla_at` = 2026-08-12T15:00 IST, and restore candidate state `PENDING_ACCEPTANCE`, **When** a Wiom agent closes that ticket in Kapture at 09:20:23 IST on 12 Aug, **Then** the complaint row reads `status` = CLOSED and `resolved_at` = 2026-08-12T09:20:23 IST, and the restore candidate reads `state` = COMPLETED. | R1a · R1b · G3 | Settled |
+| AC-R1-2 | **Given** the closure in AC-R1-1, made by the Kapture agent whose employee id is 4417, **When** it is accepted at 09:20:23, **Then** the candidate reads `resolved_by_actor_type` = CC_AGENT and `resolved_by_actor_id` = 4417 — not the CSP a0b6v6, and not the shared system identity 137439087976. | R1c · R1 MUST NOT | Settled |
+| AC-R1-5 | **Given** a Kapture closure whose payload carries no closing-agent employee id, **When** it is accepted, **Then** the candidate reads `resolved_by_actor_type` = CC_AGENT with an empty `resolved_by_actor_id`, and it still does not read CSP. | R1c | Settled |
 | AC-R1-4 | **Given** the closure in AC-R1-1, **When** it is accepted at 09:20:23, **Then** exactly one resolution signal exists for complaint of ticket 1786508079949000, and `signal_emitted` reads true once. | R1d · G4 | Settled |
 | AC-R1-3 | **Given** a ticket on the Wiom Net queue with `is_partnerassigned` = 0 and no row in `COMPLAINTS` for its `ticket_id`, **When** a Wiom agent closes it in Kapture, **Then** still no `COMPLAINTS` row exists for that `ticket_id` and no restore candidate was created. | R1 MUST NOT | Settled |
 
@@ -78,16 +79,16 @@
 | AC-R4-5 | **Given** the closure accepted at 09:20:23, **When** CSP a0b6v6 opens the feed at 09:21 without tapping ठीक है, **Then** the card is in the feed, not the archive. | R4c · R4 MUST NOT | Settled |
 | AC-R4-4 | **Given** the card resolved at 09:20:23 on 12 Aug and never acknowledged, **When** the CSP opens the feed on 20 Aug, **Then** `[CLARIFY: is the card still in the feed? Today the gateway's v2 inline window (C-01, 7 days) moves it to the archive on age alone, and C-02 (30 days) removes it entirely. "Stays until tapped, forever" cannot hold without changing both.]` | R4c · C-01 · C-02 | OPEN |
 
-### R5 — Quality credits the CSP at the moment the fault was fixed
+### R5 — Quality scores the CSP at the moment the fault was fixed
 
 | ID | Story | MUST | MUST NOT |
 |---|---|---|---|
-| R5 | As a CSP, I want to be judged on when my customer's fault was actually fixed, not on when I got round to tapping a button, so that I am not penalised for a sync failure. | **(a)** Score the complaint against the agent's closure time, not the acknowledgement time. **(b)** Credit the resolution to the CSP. | Record the complaint as breaching its deadline when the agent's closure fell before that deadline; score the ticket against the ठीक है tap. |
+| R5 | As a CSP, I want to be judged on when my customer's fault was actually fixed, not on when I got round to tapping a button, so that I am not penalised for a sync failure. | **(a)** Score the complaint against the agent's closure time, not the acknowledgement time. **(b)** Keep the complaint on the CSP's scorecard — the call-centre agent performed the resolution (R1c), but the fault was the CSP's to fix and its TAT outcome stays theirs. | Record the complaint as breaching its deadline when the agent's closure fell before that deadline; score the ticket against the ठीक है tap. |
 
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
 | AC-R5-1 | **Given** ticket 1786508079949000, raised 09:17, `sla_at` 15:00, closed by the agent at 09:20:23 and acknowledged by the CSP at 16:59, **When** the resolution ledger is written, **Then** it reads `resolved_within_tat` = true and `excluded_from_scoring` = false. | R5a · G1 | Settled |
-| AC-R5-3 | **Given** the closure in AC-R1-1, **When** the ledger row is written, **Then** its `csp_id` is a0b6v6 — the resolution counts toward that CSP's resolved volume, not Wiom's. | R5b | Settled |
+| AC-R5-3 | **Given** the closure in AC-R1-1, **When** the ledger row is written, **Then** its `csp_id` is a0b6v6, so the TAT outcome attaches to that CSP. Whether it also counts toward their resolved volume is `[CLARIFY: Quality OS decision — the candidate now records a CC agent as the resolving actor, so counting it as a CSP resolution is a choice, not a given.]` | R5b | OPEN |
 | AC-R5-2 | **Given** ticket 1786419974996000, raised 2026-08-11T09:12:34 IST with `sla_at` 2026-08-11T15:00, closed by the agent at 2026-08-12T17:18:17 — 26 h 18 min past the deadline, **When** the ledger is written, **Then** it reads `resolved_within_tat` = false. Closure sync does not rescue a fault that was already late. | R5a | Settled |
 
 ---
@@ -121,7 +122,7 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 | ID | From | Action / Trigger | Rule / Check | To | Side-effects |
 |---|---|---|---|---|---|
 | T1 | PENDING_ACCEPTANCE · ACCEPTED · ASSIGNED_TECHNICIAN · IN_PROGRESS · AWAITING_VERIFICATION | Kapture closure accepted | Ticket partner-assigned, Internet Issues, complaint not terminal | (complaint CLOSED) | Complaint resolved with `resolved_at` = the agent's closure instant (R1a); one resolution signal emitted (R1d); scored against that instant (R5a). |
-| T2 | PENDING_ACCEPTANCE · ACCEPTED · ASSIGNED_TECHNICIAN · IN_PROGRESS · AWAITING_VERIFICATION | T1 completed | — | COMPLETED | Candidate resolved, attributed to the CSP (R1c); card becomes resolved-unacknowledged — update row added unread, home subtitle changed, deadline block replaced, ठीक है the only action (R2a–d); card raised in the feed (R2e). |
+| T2 | PENDING_ACCEPTANCE · ACCEPTED · ASSIGNED_TECHNICIAN · IN_PROGRESS · AWAITING_VERIFICATION | T1 completed | — | COMPLETED | Candidate resolved, recording the call-centre agent and that agent's identity as the resolving actor (R1c); card becomes resolved-unacknowledged — update row added unread, home subtitle changed, deadline block replaced, ठीक है the only action (R2a–d); card raised in the feed (R2e). |
 | T3 | COMPLETED (unacknowledged) | T2 completed | CSP's own resolve was not the trigger | COMPLETED (unacknowledged) | Push notification sent within C-03 (R3a), deep-linking to the drilldown (R3b). |
 | T4 | COMPLETED (unacknowledged) | CSP or assigned technician taps ठीक है | Actor owns the card or is its assigned technician | COMPLETED (archived) | Card leaves the feed and is retrievable in the archive (R4a); complaint untouched (R4 MUST NOT). |
 | T5 | COMPLETED · CANCELLED | Kapture closure accepted | Complaint already terminal | COMPLETED · CANCELLED | Closure discarded; no second resolution, no second signal, no notification (G4, R3 MUST NOT). |
@@ -174,9 +175,9 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 
 | System / Service | Impact | Reference material | What was checked · ACs grounded on it |
 |---|---|---|---|
-| Ticket Service Java | Must send the closure onward to SRS — the single missing link | `controller/KaptureTicketController.java:842,892` (disposed webhook sets local status RESOLVED with system user 137439087976); `client/SrsClient.java` | The webhook already receives every Kapture closure and already resolves the ticket locally. `SrsClient` has only `notifyComplaint` and `notifyReopenComplaint` — there is no close or resolve call, which is precisely why the closure stops here · AC-R1-1 · AC-R1-3 |
+| Ticket Service Java | Must send the closure onward to SRS — the single missing link | `controller/KaptureTicketController.java:842,892` (disposed webhook sets local status RESOLVED with system user 137439087976); `client/SrsClient.java` | The webhook already receives every Kapture closure and already resolves the ticket locally. `SrsClient` has only `notifyComplaint` and `notifyReopenComplaint` — there is no close or resolve call, which is precisely why the closure stops here. **The closing agent's identity already arrives**: `KaptureTaskDetails.java:101-102` declares `ticketCloseEmpId`, and a repository-wide search finds no read of it — it is deserialised and dropped, after which the closure is stamped with the shared system id 137439087976. R1c needs no new field from Kapture, only that this one stops being discarded · AC-R1-1 · AC-R1-2 · AC-R1-3 |
 | SRS — `csp-support-resolution-service` | Must accept a closure and resolve the complaint | `api/InboundEventController.java:31` (`/srs/events/*`, 9 existing inbound event endpoints); `COMPLAINTS` columns `status`, `resolved_at`, `closed_timestamp`, `sla_at`, `within_tat`, `signal_emitted`, `verification_method`, `system_verification_result` | An inbound-event endpoint pattern already exists and is the natural home for this; `resolved_at` is a distinct column from `closed_timestamp`, and scoring keys on the former. The verification columns are named so AC-REG-4 has an observation point · AC-R1-1 · AC-R5-1 · AC-REG-4 |
-| TAS restore — `csp-tas-service` | Already completes the candidate on `COMPLAINT_RESOLVED`; must additionally hold a resolved-but-unacknowledged card and accept the acknowledgement. Must not act on the SHIFTING family | `application/impl/InboundEventProcessingServiceImpl.java:94-119`; `domain/model/CandidateState.java`; `domain/model/ResolverActorType.java`; `RESTORE_EXECUTION_CANDIDATES` columns `task_family`, `state`, `is_csp_actionable`, `resolved_by_actor_type`, `resolved_by_actor_id` | The resolve half is built and idempotent — it dedupes on event id and acts only on non-terminal candidates, so T5 is already the existing behaviour. `ResolverActorType` is CSP · TECHNICIAN · OTHER, derived from the JWT role, which supports R1c and R4b. `task_family` is RESTORE or SHIFTING, giving AC-REG-2 its observation point · AC-R1-2 · AC-DUP-1 · AC-REG-2 |
+| TAS restore — `csp-tas-service` | Already completes the candidate on `COMPLAINT_RESOLVED`; must additionally hold a resolved-but-unacknowledged card and accept the acknowledgement. Must not act on the SHIFTING family | `application/impl/InboundEventProcessingServiceImpl.java:94-119`; `domain/model/CandidateState.java`; `domain/model/ResolverActorType.java`; `RESTORE_EXECUTION_CANDIDATES` columns `task_family`, `state`, `is_csp_actionable`, `resolved_by_actor_type`, `resolved_by_actor_id` | The resolve half is built and idempotent — it dedupes on event id and acts only on non-terminal candidates, so T5 is already the existing behaviour. `ResolverActorType` is CSP · TECHNICIAN · OTHER, derived from the JWT role — **it has no value for a call-centre agent**, so R1c needs one added rather than collapsing the case into OTHER, which would lose exactly the fact this rule exists to record. R4b is supported as-is. `task_family` is RESTORE or SHIFTING, giving AC-REG-2 its observation point · AC-R1-2 · AC-DUP-1 · AC-REG-2 |
 | TAS aggregation (feed) | Card ordering and archival | `aggregation/service/AggregationEngine.java:40,53,152`; `aggregation/config/TasParameters.java:44-75` | The v2 feed sorts on `latest_attention_at` DESC and nothing else, so raising the update *is* the rise — no ordering rule is needed or possible. Terminal cards already render greyed with no actionable dot and are retained 30 days · AC-R2-4 · AC-R4-4 |
 | CSP app | Renders the resolved treatment and the ठीक है action | `RestoreDrilldownContent.kt:298-307`; `ScheduleSection.kt:44-65`; `install_labels_v1.4_hi_en.json:118` | The completed deadline treatment already exists: on a resolved restore the app passes `deadlineAt = null` and `isCompleted = true`, and the block renders `schedule.deadline.completed` — "आपकी तरफ से काम पूरा हो गया" / "Your work is complete". R2c reuses it rather than adding anything · AC-R2-3 |
 | Quality OS — `csp-quality-service` | Reads the resolution and scores the CSP | `COMPLAINT_RESOLUTION_LEDGER` columns `resolved_within_tat`, `excluded_from_scoring`, `tat_window_hours` | Of 395 tickets where Kapture closed inside the deadline and the CSP marked late, 393 are recorded `resolved_within_tat` = false and none excluded — so the penalty is real and the ledger is the place it must change · AC-R5-1 · AC-GRD-1 |
@@ -193,6 +194,7 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 | Restore execution candidate | TAS's CSP-facing record of the work: the card, its allowed actions, its attention timers and its timeline. Created when SRS classifies a complaint; the thing the CSP actually sees and taps. | TAS |
 | Resolved-unacknowledged ⚠️ *AI GENERATED — review* | A card whose complaint and candidate are resolved, which remains in the CSP's feed carrying one action — ठीक है — until the CSP or their assigned technician taps it. | TAS |
 | Archived | Reachable in the CSP's archive rather than the feed. Today a card reaches this on age (C-01); under this spec, on acknowledgement. | TAS |
+| CC agent | A Wiom call-centre agent working in Kapture. Identified by the Kapture employee id that arrives on the closure webhook as `ticketCloseEmpId`. Recorded as the resolving actor when a closure of theirs resolves a complaint (R1c). | Support/Ops |
 | Ticket Service Java | The relay between Kapture and the OS. Receives Kapture webhooks, creates complaints in SRS, and pushes CSP resolutions back to Kapture. | Support/Ops |
 
 ---
@@ -202,7 +204,7 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 | Capability | Needed by |
 |---|---|
 | Carry a Kapture-side closure, with the instant the agent closed it, from the relay to the complaint's owner. | T1 · R1a · §6 Ticket Service Java |
-| Resolve a complaint on an authority other than the CSP's own action, while still attributing the resolution to that CSP. | T1 · T2 · R1c · R5b |
+| Resolve a complaint on an authority other than the CSP's own action, recording which actor did it, while the complaint stays on the CSP's scorecard. | T1 · T2 · R1c · R5b |
 | Hold a card that is resolved and no longer actionable, yet still present in the CSP's feed, until its owner acknowledges it. | T2 · T4 · T6 · R4c |
 | Record an acknowledgement against a card and move it to the archive on that acknowledgement rather than on age. | T4 · R4a · C-01 |
 | Notify a CSP of a change to a card they are not looking at, and deep-link them to that card. | T3 · R3a · R3b |
@@ -230,6 +232,7 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 | §5 · C-04 | How long may a Kapture closure take to become a closed complaint before it is treated as failed, and what happens then? (AC-FAIL-1 depends on this.) |
 | §2 · R3 | What the CSP sees if the notification never arrives — is the in-app card the sole guarantee? |
 | §2 · R2 | The English copy for the update row and the home subtitle. Only Hindi was supplied in the updated design. |
+| §2 · R5 | Now that Quality can see a complaint was resolved by a CC agent rather than the CSP, should it treat those differently — count them toward the CSP's resolved volume, or only toward their TAT outcome? Akhil's call. |
 
 ## Overrides
 
