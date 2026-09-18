@@ -2,8 +2,8 @@
 
 | | | | |
 |---|---|---|---|
-| **Owner** — Ashish Raj (PM) | **Reviewer** — Akash | **Status** — Signed off | **Sign-off** — Signed off · 18 Sep 2026 |
-| **Version** — v1.0 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | | |
+| **Owner** — Ashish Raj (PM) | **Reviewer** — Akash | **Status** — Draft | **Sign-off** — Pending |
+| **Version** — v1.1 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | | |
 
 ---
 
@@ -45,14 +45,14 @@
 
 | ID | Story | MUST | MUST NOT |
 |---|---|---|---|
-| R2 | As anyone holding the card, I want it to tell me plainly that Wiom closed this and that nothing is left to do, so that I do not travel to a job that no longer exists. | **(a)** Add an update row to the ticket's Updates list, unread, carrying the supplied copy. **(b)** Leave the home card subtitle unchanged — the fault is still what the card is about, and the closure is told through the update row and the notification. **(c)** Replace the deadline block with the completed treatment the app already uses on a resolved restore — the label `schedule.deadline.completed`, no countdown. **(d)** Offer one action, **ठीक है**, and no other. **(e)** Raise the card in the feed, which by TAS's existing sort is what showing it means.. | Offer accept, assign-technician, start-work or resolve on the card; show a running countdown; show the card as still owing work. |
+| R2 | As anyone holding the card, I want it to tell me plainly that Wiom closed this and that nothing is left to do, so that I do not travel to a job that no longer exists. | **(a)** Add an update row to the ticket's Updates list, unread, carrying the supplied copy. **(b)** Change the home card subtitle to the supplied copy. **(c)** Replace the deadline block with the completed treatment the app already uses on a resolved restore — the label `schedule.deadline.completed`, no countdown. **(d)** Offer one action, **ठीक है**, and no other. **(e)** Raise the card in the feed, which by TAS's existing sort is what showing it means.. | Offer accept, assign-technician, start-work or resolve on the card; show a running countdown; show the card as still owing work. |
 
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
 | AC-R2-1 | **Given** the resolved candidate from AC-R1-1, **When** owner a0b6v6 opens the service drilldown, **Then** the Updates section shows one unread row reading "कस्टमर ने Wiom को बताया कि उनका नेट चल गया है, इस लिए Wiom ने यह टिकट रीज़ॉल्व कर दिया है" — in English, "The customer told Wiom their internet is working again, so Wiom has resolved this ticket." — and the unread count reads 1. | R2a | Settled |
 | AC-R2-2 | **Given** the same card, **When** any holder opens the drilldown, **Then** the only action offered is ठीक है — accept, assign technician and resolve are all absent. | R2d · G2 | Settled |
 | AC-R2-3 | **Given** the same card, whose `deadline_at` was 2026-08-12T15:00 IST, **When** a0b6v6 opens the drilldown at 09:25 IST, **Then** the schedule block reads "आपकी तरफ से काम पूरा हो गया" and no countdown pill is shown. | R2c | Settled |
-| AC-R2-4 | **Given** owner a0b6v6 holding three other open cards, **When** the agent's closure is accepted at 09:20:23 and a0b6v6 opens the home feed at 09:25, **Then** the card for ticket 1786508079949000 is first in the feed and carries an unread badge, and its subtitle is the same fault text it showed before the closure. | R2b · R2e | Settled |
+| AC-R2-4 | **Given** owner a0b6v6 holding three other open cards, **When** the agent's closure is accepted at 09:20:23 and a0b6v6 opens the home feed at 09:25, **Then** the card for ticket 1786508079949000 is first in the feed, carries an unread badge, and its subtitle reads "कस्टमर ने बताया नेट ठीक हो गया है" — in English, "Customer says internet is working". | R2b · R2e | Settled |
 
 ### R3 — The CSP is told without opening the app
 
@@ -154,7 +154,7 @@ Three things reach the CSP, in this order:
 | # | Surface | When |
 |---|---|---|
 | 1 | Push notification — to the owner, each manager, and the assigned technician | Always, unless that person's own resolve caused the closure (R3a) |
-| 2 | Home feed card — unread badge, raised; subtitle unchanged | Always (R2b, R2e) |
+| 2 | Home feed card — new subtitle, unread badge, raised | Always (R2b, R2e) |
 | 3 | Service drilldown — update row, completed schedule block, single CTA | On open (R2a, R2c, R2d) |
 
 ### Surface 1 — the push notification
@@ -164,18 +164,17 @@ Three things reach the CSP, in this order:
 
 | Element | Source / Routes to | Logic |
 |---|---|---|
-| Field — body | fixed copy | **Hindi** — कस्टमर ने बताया नेट ठीक हो गया है · **English** — Customer says internet is working. |
-| Field — heading | the service line and the customer's name | Rendered as "सर्विस · <customer name>", with the ticket reference and locality beneath — "WM-2214 · नेब सराय" — so the CSP knows which job it is before opening. |
+| Field — copy | [TBD — not asked] | Not supplied. The design shows the home feed card, not a notification, so no notification text exists yet. |
 | Action — tap | the service drilldown for that ticket | Lands on the identical screen a direct open reaches, with the ठीक है action visible (R3b, R3c). The same screen is reached on both apps. |
 
 ### Surface 2 — the home feed card
 
 **States:** resolved-unacknowledged (active, unread) · archived (after ठीक है, or after C-01).
-**Freshness:** the badge appears when the closure is accepted; the card rises at that same moment, because TAS sorts on latest_attention_at and raising the update is the rise (§7 TAS aggregation).
+**Freshness:** subtitle and badge change when the closure is accepted; the card rises at that same moment, because TAS sorts on latest_attention_at and raising the update is the rise (§7 TAS aggregation).
 
 | Element | Source / Routes to | Logic |
 |---|---|---|
-| Field — subtitle | unchanged | Still the fault text. The closure reaches the CSP through the notification and the update row, not by rewriting the card's subject (R2b). |
+| Field — subtitle | fixed copy | **Hindi** — कस्टमर ने बताया नेट ठीक हो गया है · **English** — Customer says internet is working. Replaces the fault subtitle (R2b). Shown under the service line and customer name, above the ticket reference and locality — "WM-2214 · नेब सराय". |
 | Field — unread badge | the unread update row | Shown until that holder opens the drilldown (R2a). |
 | State — active | candidate is resolved-unacknowledged | Renders as live work — **not** greyed, not as a finished card — so ठीक है can be tapped and the holder can see Wiom acted (R4c). This is a change: terminal cards render greyed with no actionable dot today (§7 TAS aggregation). |
 | Position — first in feed | latest_attention_at | First on arrival (R2e, AC-R2-4). No ordering rule is written, because raising the update already is the rise. |
@@ -275,6 +274,12 @@ Three things reach the CSP, in this order:
 | Discard a closure that arrives for an already-terminal complaint, without a second resolution or signal. | T5 · G4 |
 
 ---
+
+## Not asked
+
+| Location (section · ID) | What was never asked |
+|---|---|
+| §4 · Surface 1 | The push-notification copy. The element beside the phone in the design is the home feed card, so no notification text exists anywhere yet. |
 
 ## Overrides
 
