@@ -11,10 +11,14 @@ const md = fs.readFileSync('Kapture_Closure_Sync_PRD.md', 'utf8');
 const html = fs.readFileSync('prd/index.html', 'utf8');
 
 // Visible text of the page: drop head, style, script, and all tags.
+// A link's href is content the markdown put there, so it is surfaced as text before
+// the tags go — otherwise every URL reads as dropped.
 const visible = html
   .replace(/<head[\s\S]*?<\/head>/gi, ' ')
   .replace(/<style[\s\S]*?<\/style>/gi, ' ')
   .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<a\b[^>]*href="([^"]*)"[^>]*>/gi,
+    (_, href) => href.startsWith('#') ? ' ' : ' ' + href + ' ')
   .replace(/<[^>]+>/g, ' ')
   .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
   .replace(/&nbsp;/g, ' ').replace(/&middot;/g, '·').replace(/&rarr;/g, '→');

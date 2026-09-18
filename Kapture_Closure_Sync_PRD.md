@@ -3,7 +3,7 @@
 | | | | |
 |---|---|---|---|
 | **Owner** — Ashish Raj (PM) | **Reviewer** — Akash | **Status** — Draft | **Sign-off** — Pending |
-| **Version** — v1.0 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | | |
+| **Version** — v1.1 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | | |
 
 ---
 
@@ -140,7 +140,58 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 
 ---
 
-## 4. Cross-cutting Acceptance Criteria
+## 4. Screen Requirements
+
+**Experience intent:** the CSP should see that Wiom already dealt with their customer's fault — not find the job quietly gone. The card stays in front of them, active, saying what happened and asking for one tap.
+
+**Master design file:** [PA — Dev, January 2026 onwards, node 15165-12160](https://www.figma.com/design/W2Z3B5xfFO3UibJSzkyHn2/PA---Dev--%3E-January-2026-Onwards?node-id=15165-12160). Two surfaces change and one is deliberately left alone. Nothing here is a new component: the Updates row, the home subtitle, the schedule block and the primary CTA all exist today and are re-pointed.
+
+Three things reach the CSP, in this order:
+
+| # | Surface | When |
+|---|---|---|
+| 1 | Push notification | Always, unless the CSP's own resolve caused the closure (R3a) |
+| 2 | Home feed card — new subtitle, unread badge, raised | Always (R2b, R2e) |
+| 3 | Service drilldown — update row, completed schedule block, single CTA | On open (R2a, R2c, R2d) |
+
+### Surface 1 — the push notification
+
+**States:** sent (closure accepted, CSP had not already resolved — T3) · not sent (the CSP's own resolve was the trigger — AC-R3-3).
+**Freshness:** sent when the closure is accepted. No delivery window is committed — see the Override on AC-FAIL-1; latency is not promised.
+
+| Element | Source / Routes to | Logic |
+|---|---|---|
+| Field — copy | [TBD — not asked] | Not supplied; the design carries no notification text. |
+| Action — tap | the service drilldown for that ticket | Lands on the identical screen a direct open reaches, with the ठीक है action visible (R3b, R3c). |
+
+### Surface 2 — the home feed card
+
+**States:** resolved-unacknowledged (active, unread) · archived (after ठीक है, or after C-01).
+**Freshness:** subtitle and badge change when the closure is accepted; the card rises at that same moment, because TAS sorts on latest_attention_at and raising the update is the rise (§7 TAS aggregation).
+
+| Element | Source / Routes to | Logic |
+|---|---|---|
+| Field — subtitle | fixed copy | **Hindi** — कस्टमर ने बताया नेट ठीक हो गया है · **English** [TBD — not asked]. Replaces the fault subtitle (R2b). |
+| Field — unread badge | the unread update row | Shown until the CSP opens the drilldown (R2a). |
+| State — active | candidate is resolved-unacknowledged | Renders as live work — **not** greyed, not as a finished card — so ठीक है can be tapped and the CSP can see Wiom acted (R4c). This is a change: terminal cards render greyed with no actionable dot today (§7 TAS aggregation). |
+| Position — first in feed | latest_attention_at | First on arrival (R2e, AC-R2-4). No ordering rule is written, because raising the update already is the rise. |
+
+### Surface 3 — the service drilldown
+
+**States:** resolved-unacknowledged — the only state this spec introduces · archived.
+**Freshness:** rendered from the candidate on open.
+
+| Element | Source / Routes to | Logic |
+|---|---|---|
+| Section — Updates (अपडेट) | new unread row, top of the list | **Hindi** — कस्टमर ने Wiom को बताया कि उनका नेट चल गया है, इस लिए Wiom ने यह टिकट रीज़ॉल्व कर दिया है · **English** [TBD — not asked]. Unread count reads 1 (R2a, AC-R2-1). |
+| Section — Important information (ज़रूरी जानकारी) | unchanged | Keeps showing the issue type alone. This spec adds no comment there — the updated design removed the one the original carried. |
+| Section — schedule (कब तक करना है?) | schedule.deadline.completed | Countdown suppressed; the block reads "आपकी तरफ से काम पूरा हो गया" / "Your work is complete" (R2c). Reuses what the app already does on a resolved restore (§7 CSP app), so the live countdown in the mock is a mock artefact, not a requirement. |
+| Action — ठीक है | archives the card | The only action offered; accept task, assign technician, start work and resolve are all absent (R2d, G2). Accepted from the CSP who owns the card or the technician assigned to it (R4b). |
+| Sections — address, contact, connection details | unchanged | Still rendered, so the CSP can reach the customer after acknowledging. |
+
+---
+
+## 5. Cross-cutting Acceptance Criteria
 
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
@@ -169,7 +220,7 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 
 ---
 
-## 5. Configurability
+## 6. Configurability
 
 | ID | Parameter | Value / Default | Kind | Range · Owner · Why configurable |
 |---|---|---|---|---|
@@ -178,7 +229,7 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 
 ---
 
-## 6. Impacted Systems & References
+## 7. Impacted Systems & References
 
 | System / Service | Impact | Reference material | What was checked · ACs grounded on it |
 |---|---|---|---|
@@ -193,7 +244,7 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 
 ---
 
-## 7. Glossary
+## 8. Glossary
 
 | Term | Meaning | Owner (domain) |
 |---|---|---|
@@ -201,17 +252,17 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 | Complaint | SRS's record of the customer's fault. Carries the classification, the deadline (`sla_at`), the resolution time and the Quality signal. One ticket may produce several complaints across a reopen chain. | SRS |
 | Restore execution candidate | TAS's CSP-facing record of the work: the card, its allowed actions, its attention timers and its timeline. Created when SRS classifies a complaint; the thing the CSP actually sees and taps. | TAS |
 | Resolved-unacknowledged ⚠️ *AI GENERATED — review* | A card whose complaint and candidate are resolved, which stays active in the CSP's feed carrying one action — ठीक है — until the CSP or their assigned technician taps it, or C-01 elapses. It is deliberately not shown as finished: the CSP is meant to see that Wiom closed the fault, not to find the card silently gone. | TAS |
-| Archived | Reachable in the CSP's archive rather than the feed. Today a card reaches this on age — the gateway's 7-day inline feed window (§6); under this spec, on acknowledgement. | TAS |
+| Archived | Reachable in the CSP's archive rather than the feed. Today a card reaches this on age — the gateway's 7-day inline feed window (§7); under this spec, on acknowledgement. | TAS |
 | CC agent | A Wiom call-centre agent working in Kapture. Identified by the Kapture employee id that arrives on the closure webhook as `ticketCloseEmpId`. Recorded as the resolving actor when a closure of theirs resolves a complaint (R1c). | Support/Ops |
 | Ticket Service Java | The relay between Kapture and the OS. Receives Kapture webhooks, creates complaints in SRS, and pushes CSP resolutions back to Kapture. | Support/Ops |
 
 ---
 
-## 8. Notes for System Capabilities
+## 9. Notes for System Capabilities
 
 | Capability | Needed by |
 |---|---|
-| Carry a Kapture-side closure, with the instant the agent closed it, from the relay to the complaint's owner. | T1 · R1a · §6 Ticket Service Java |
+| Carry a Kapture-side closure, with the instant the agent closed it, from the relay to the complaint's owner. | T1 · R1a · §7 Ticket Service Java |
 | Resolve a complaint on an authority other than the CSP's own action, recording which actor did it, while the complaint stays on the CSP's scorecard. | T1 · T2 · R1c · R5b |
 | Hold a card that is resolved and no longer actionable, yet still present in the CSP's feed, until its owner acknowledges it. | T2 · T4 · T6 · R4c |
 | Record an acknowledgement against a card, archiving it on that acknowledgement or on C-01, whichever comes first. | T4 · T6 · R4a · R4d · C-01 |
@@ -228,20 +279,22 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 | §2 · R2e | Raising the card in the feed stated as an obligation rather than a consequence | The PM chose "yes, float it"; TAS's sort makes raising an update and raising the card the same act, so it is written as one obligation, not two. |
 | §2 · R3 MUST NOT · AC-R3-3 | Suppressing the notification when the CSP's own resolve caused the Kapture closure | Inference from the race decision (first arrival wins). Not stated by the PM; without it, every CSP-resolved ticket would notify its own CSP. |
 | §3b · T7 · T8 | Reopen and cancelled-state rows | Required by the template's full state × trigger coverage. T7 records the PM's "new complaint, fresh card, as today"; T8 is marked not reachable. |
-| §4 · AC-GRD-1 · AC-GRD-3 | Stating the guardrails as month-scale assertions with the measured counts | The guardrails are the PM's; expressing them as population-level checks with the study's numbers is a drafting choice. |
-| §5 · C-01 | The range (1–30 days), the owner (TAS / Product Ops) and the stated reason for making the window configurable | PM gave the value (7 days) and that it is a config; the three supporting cells are mine. Range is bounded above by TAS's 30-day retention, below which a card would outlive the archive that holds it. |
-| §7 | "Resolved-unacknowledged" as a coined term | No name was supplied for the state between resolution and ठीक है; the document needs one canonical name. |
+| §5 · AC-GRD-1 · AC-GRD-3 | Stating the guardrails as month-scale assertions with the measured counts | The guardrails are the PM's; expressing them as population-level checks with the study's numbers is a drafting choice. |
+| §6 · C-01 | The range (1–30 days), the owner (TAS / Product Ops) and the stated reason for making the window configurable | PM gave the value (7 days) and that it is a config; the three supporting cells are mine. Range is bounded above by TAS's 30-day retention, below which a card would outlive the archive that holds it. |
+| §8 | "Resolved-unacknowledged" as a coined term | No name was supplied for the state between resolution and ठीक है; the document needs one canonical name. |
 
 ## Not asked
 
 | Location (section · ID) | What was never asked |
 |---|---|
 | §2 · R3 | What the CSP sees if the notification never arrives — is the in-app card the sole guarantee? |
-| §2 · R2 | The English copy for the update row and the home subtitle. Only Hindi was supplied in the updated design. |
+| §2 · R2 · §4 | The English copy for the update row and the home feed subtitle. Only Hindi was supplied in the updated design. |
+| §4 | The push-notification copy. The design carries no notification text. |
 
 ## Overrides
 
 | Rule overridden | What was done instead | Rationale | Approved by |
 |---|---|---|---|
-| Template §4 / J2 — a failure envelope must name a §5 window by whose expiry the outcome is guaranteed | AC-FAIL-1 states the outcome — a findable record naming the ticket and the agent's closure instant — with no window attached | PM removed both timing parameters that this document previously carried. The delivery path has no retry, so a window would have described a wait nobody implements; the record is what makes a dropped closure recoverable | Ashish Raj · 18 Sep 2026 |
+| Template v4 defines no Screen Requirements section | §4 Screen Requirements added, in the shape the Handler Notice, Renewal Win-Back and Ticket Title Sync PRDs use | v4 dropped the section v3 carried. This feature changes three CSP-facing surfaces and has a design file, so the obligations needed one home instead of being scattered across R2, R3 and R4 | Ashish Raj · 18 Sep 2026 |
+| Template §5 / J2 — a failure envelope must name a §6 window by whose expiry the outcome is guaranteed | AC-FAIL-1 states the outcome — a findable record naming the ticket and the agent's closure instant — with no window attached | PM removed both timing parameters that this document previously carried. The delivery path has no retry, so a window would have described a wait nobody implements; the record is what makes a dropped closure recoverable | Ashish Raj · 18 Sep 2026 |
 | §2 — copy must be true of the case it fires on | The supplied copy asserts "कस्टमर ने Wiom को बताया कि उनका नेट चल गया है" on **all** Kapture closures, while 59% (3,260/mo) are closed on "ping is up, customer not called" and only 2.5% (138/mo) are a customer actually saying it works | PM chose full coverage of the gap over per-case copy accuracy, and chose to keep the supplied copy unchanged, after being shown the split | Ashish Raj · 17 Sep 2026 |
