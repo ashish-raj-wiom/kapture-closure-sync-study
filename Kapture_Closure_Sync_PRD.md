@@ -174,8 +174,8 @@ Three things reach the CSP, in this order:
 
 | Element | Source / Routes to | Logic |
 |---|---|---|
-| Field — subtitle | fixed copy | **Hindi** — कस्टमर ने बताया नेट ठीक हो गया है · **English** — Customer says internet is working. Replaces the fault subtitle (R2b). Shown under the service line and customer name, above the ticket reference and locality — "WM-2214 · नेब सराय". |
-| Field — unread badge | the unread update row | Shown until that holder opens the drilldown (R2a). |
+| Field — subtitle | fixed copy | **Hindi** — कस्टमर ने बताया नेट ठीक हो गया है · **English** — Customer says internet is working. Replaces the fault subtitle (R2b). It is the card's third line, beneath the service line and customer name ("सर्विस · प्रीति शर्मा", with the time) and the ticket reference and locality ("WM-2214 · नेब सराय"), both of which are unchanged. |
+| Field — unread badge | the unread update row | Count of unread updates, sitting at the right of the subtitle line. Reads 1 on arrival and shows until that holder opens the drilldown (R2a). |
 | State — active | candidate is resolved-unacknowledged | Renders as live work — **not** greyed, not as a finished card — so ठीक है can be tapped and the holder can see Wiom acted (R4c). This is a change: terminal cards render greyed with no actionable dot today (§7 TAS aggregation). |
 | Position — first in feed | latest_attention_at | First on arrival (R2e, AC-R2-4). No ordering rule is written, because raising the update already is the rise. |
 
