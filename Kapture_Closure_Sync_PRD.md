@@ -3,7 +3,7 @@
 | | | | |
 |---|---|---|---|
 | **Owner** — Ashish Raj (PM) | **Reviewer** — Akash | **Status** — Draft | **Sign-off** — Pending |
-| **Version** — v1.1 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | | |
+| **Version** — v1.2 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | | |
 
 ---
 
@@ -58,12 +58,13 @@
 
 | ID | Story | MUST | MUST NOT |
 |---|---|---|---|
-| R3 | As anyone working a ticket — the CSP, a manager on that account, or the technician it was assigned to — I want to be told that Wiom closed it so that I stop working it. | **(a)** On a closure, notify **every person holding the card**: the account owner, any manager on that account, and the assigned technician where there is one. **(b)** Opening the notification lands that person on the service drilldown for the ticket, showing ठीक है. **(c)** Opening the ticket directly lands on the identical screen. | Send the notification when that person's own resolve was the one that closed the ticket; leave the assigned technician untold because the CSP was told. |
+| R3 | As anyone working a ticket — the CSP, a manager on that account, or the technician it was assigned to — I want to be told that Wiom closed it so that I stop working it, by whichever route I happen to look. | **(a)** On a closure, notify **every person holding the card**: the account owner, any manager on that account, and the assigned technician where there is one. **(b)** Opening the notification lands that person on the service drilldown for the ticket, showing ठीक है. **(c)** Opening the ticket directly lands on the identical screen. **(d)** Say it on the **home feed** too: the closure is legible from the feed alone, without opening the notification and without opening the drilldown, so a holder who never received or never tapped a notification still learns of it. | Send the notification when that person's own resolve was the one that closed the ticket; leave the assigned technician untold because the CSP was told; make any single route the only way to find out. |
 
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
 | AC-R3-1 | **Given** ticket 1786508079949000 held by owner a0b6v6, manager M and assigned technician T, **When** the closure from AC-R1-1 is accepted, **Then** a push notification naming that ticket is sent to all three. | R3a | Settled |
 | AC-R3-4 | **Given** the same ticket with no technician assigned, **When** the closure is accepted, **Then** the notification goes to a0b6v6 and M only, and no technician notification is attempted. | R3a | Settled |
+| AC-R3-5 | **Given** the closure accepted at 09:20:23 and no notification delivered to owner a0b6v6 — the device was offline — **When** a0b6v6 opens the home feed at 14:00, **Then** the card for ticket 1786508079949000 is at the top with the unread badge and the subtitle "कस्टमर ने बताया नेट ठीक हो गया है", so a0b6v6 learns the ticket was closed without a notification and without opening the drilldown. | R3d · R2b · R2e | Settled |
 | AC-R3-2 | **Given** the notification sent to technician T, **When** T taps it, **Then** T's app opens the service drilldown for ticket 1786508079949000 with the ठीक है action visible — the same screen T reaches by opening the card from their feed. | R3b · R3c | Settled |
 | AC-R3-3 | **Given** a ticket the CSP resolved in the app at 09:19, **When** Kapture records its own closure at 09:20 as the downstream echo of that resolve, **Then** no push notification is sent. | R3 MUST NOT · T5 | Settled |
 
@@ -133,7 +134,7 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 |---|---|---|---|---|---|
 | T1 | PENDING_ACCEPTANCE · ACCEPTED · ASSIGNED_TECHNICIAN · IN_PROGRESS · AWAITING_VERIFICATION | Kapture closure accepted | Ticket partner-assigned, Internet Issues, complaint not terminal | (complaint CLOSED) | Complaint resolved with `resolved_at` = the agent's closure instant (R1a); one resolution signal emitted (R1d); scored against that instant (R5a). |
 | T2 | PENDING_ACCEPTANCE · ACCEPTED · ASSIGNED_TECHNICIAN · IN_PROGRESS · AWAITING_VERIFICATION | T1 completed | — | COMPLETED (unacknowledged) | Candidate resolved, recording the call-centre agent and that agent's identity as the resolving actor (R1c); card becomes resolved-unacknowledged — active and actionable, update row added unread, home subtitle changed, deadline block replaced, ठीक है the only action (R2a–d, R4c); card raised in the feed (R2e). |
-| T3 | COMPLETED (unacknowledged) | T2 completed | That person's own resolve was not the trigger | COMPLETED (unacknowledged) | One push notification per holder — owner, each manager on the account, and the assigned technician where there is one (R3a) — each deep-linking to the drilldown (R3b). |
+| T3 | COMPLETED (unacknowledged) | T2 completed | That person's own resolve was not the trigger | COMPLETED (unacknowledged) | One push notification per holder — owner, each manager on the account, and the assigned technician where there is one (R3a) — each deep-linking to the drilldown (R3b). The feed already carries the same message independently of delivery (R3d), so a lost notification loses nothing. |
 | T4 | COMPLETED (unacknowledged) | A holder taps ठीक है | Actor is the account owner, a manager on that account, or the assigned technician | COMPLETED (archived) | Archived **for that person only**: their card leaves their feed and is retrievable in their archive (R4a); every other holder's card is untouched and still active (R4 MUST NOT); complaint untouched. |
 | T5 | COMPLETED (unacknowledged) · COMPLETED (archived) · CANCELLED | Kapture closure accepted | — | unchanged | Closure discarded; no second resolution, no second signal, no notification (G4, R3 MUST NOT). The card is already retired, so nothing is left to do. |
 | T6 | COMPLETED (unacknowledged) | C-01 elapses with no acknowledgement from a given holder | — | COMPLETED (archived) | Archived **for that person only**: their card leaves their feed unacknowledged and is retrievable in their archive (R4d); other holders are unaffected; complaint untouched. |
@@ -149,13 +150,13 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 
 **Master design file:** [PA — Dev, January 2026 onwards, node 15165-12160](https://www.figma.com/design/W2Z3B5xfFO3UibJSzkyHn2/PA---Dev--%3E-January-2026-Onwards?node-id=15165-12160). Two surfaces change and one is deliberately left alone. Nothing here is a new component: the Updates row, the home subtitle, the schedule block and the primary CTA all exist today and are re-pointed.
 
-Three things reach the CSP, in this order:
+The closure reaches a holder by **three independent routes**. Each is sufficient on its own — a holder who never receives a notification still learns of it from the feed, and one who never opens the feed still learns of it on the drilldown (R3d):
 
 | # | Surface | When |
 |---|---|---|
-| 1 | Push notification — to the owner, each manager, and the assigned technician | Always, unless that person's own resolve caused the closure (R3a) |
-| 2 | Home feed card — new subtitle, unread badge, raised | Always (R2b, R2e) |
-| 3 | Service drilldown — update row, completed schedule block, single CTA | On open (R2a, R2c, R2d) |
+| 1 | Push notification — to the owner, each manager, and the assigned technician | Always, unless that person's own resolve caused the closure (R3a). Best-effort |
+| 2 | Home feed card — new subtitle, unread badge, raised to the top | Always (R2b, R2e, R3d). **This is the guaranteed route** |
+| 3 | Service drilldown — update row, completed schedule block, single CTA | On open, however the holder got there (R2a, R2c, R2d) |
 
 ### Surface 1 — the push notification
 
@@ -178,6 +179,7 @@ Three things reach the CSP, in this order:
 | Field — unread badge | the unread update row | Count of unread updates, sitting at the right of the subtitle line. Reads 1 on arrival and shows until that holder opens the drilldown (R2a). |
 | State — active | candidate is resolved-unacknowledged | Renders as live work — **not** greyed, not as a finished card — so ठीक है can be tapped and the holder can see Wiom acted (R4c). This is a change: terminal cards render greyed with no actionable dot today (§7 TAS aggregation). |
 | Position — first in feed | latest_attention_at | First on arrival (R2e, AC-R2-4). No ordering rule is written, because raising the update already is the rise. |
+| Route — self-sufficient | the subtitle, badge and position together | The three read as one message: the fault is closed, this card is new, and it is at the top. A holder who never got a notification learns of the closure here, without opening anything (R3d). |
 
 ### Surface 3 — the service drilldown
 
@@ -271,6 +273,7 @@ Three things reach the CSP, in this order:
 | Hold a card that is resolved yet still active and actionable in a holder's feed, so it can be acknowledged rather than read as finished. | T2 · T4 · T6 · R4c |
 | Record an acknowledgement **per person holding a card**, archiving that person's copy on their own tap or on C-01, whichever comes first, and leaving every other holder's copy untouched. | T4 · T6 · R4a · R4d · C-01 |
 | Notify every person holding a card — owner, managers, assigned technician — on whichever app they use, and deep-link each to that card. | T3 · R3a · R3b |
+| Say what changed on the feed itself, so a holder learns of the closure without opening a notification or the card. | R3d · R2b · R2e |
 | Discard a closure that arrives for an already-terminal complaint, without a second resolution or signal. | T5 · G4 |
 
 ---
