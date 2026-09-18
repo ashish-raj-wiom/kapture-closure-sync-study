@@ -2,8 +2,8 @@
 
 | | | | |
 |---|---|---|---|
-| **Owner** — Ashish Raj (PM) | **Reviewer** — [TBD — not asked] | **Status** — Draft | **Sign-off** — Pending |
-| **Version** — v0.9 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | **Consulted — Support/Ops** — [TBD — not asked] | **Consulted — TAS eng** — [TBD — not asked] |
+| **Owner** — Ashish Raj (PM) | **Reviewer** — Akash | **Status** — Draft | **Sign-off** — Pending |
+| **Version** — v1.0 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | | |
 
 ---
 
@@ -18,7 +18,7 @@
 | ID | Guardrail | One line | Anchors |
 |---|---|---|---|
 | G1 | **Never late for work done on time** (zero tolerance) | A CSP is never recorded as breaching a deadline for a fault Wiom closed before that deadline. | R1 · R5 · AC-R5-1 · AC-GRD-1 |
-| G2 | **A closed fault asks for nothing** | Once the complaint is resolved, the card offers no action that sends the CSP or a technician to the site. | R2 · AC-R2-2 · AC-GRD-2 |
+| G2 | **A closed fault asks for nothing** | Once the fault is closed — however it got there — the card offers no action that sends the CSP or a technician to the site. | R1 · R2 · AC-R1-6 · AC-R2-2 · AC-GRD-2 |
 | G3 | **Wiom never waits on a tap it does not need** | When Kapture closes the ticket, the complaint reaches a terminal state on its own — the CSP's acknowledgement is never what closes it. | R1 · R4 · AC-R1-1 · AC-WF-2 · AC-GRD-3 |
 | G4 | **One fault, one resolution** | A single fault produces one complaint resolution and one Quality signal, however many times the closure is delivered. | R1 · AC-DUP-1 · AC-GRD-4 |
 
@@ -30,7 +30,7 @@
 
 | ID | Story | MUST | MUST NOT |
 |---|---|---|---|
-| R1 | As a CSP, when Wiom has already closed my customer's ticket, I want the complaint closed on my behalf so that my card and my deadline stop, without me doing anything. | **(a)** On a Kapture-side closure of a partner-assigned Internet Issues ticket, resolve the open complaint, stamping the resolution at the moment the agent closed it in Kapture. **(b)** Resolve the matching restore execution candidate, to the same end state a CSP's own resolve produces. **(c)** Record the call-centre agent as the actor who resolved it, carrying that agent's own identity through from Kapture — never the CSP, and never a shared system identity. **(d)** Emit exactly one resolution signal for the fault. ⚠️ *AI GENERATED — review*. | Resolve a complaint whose ticket was not closed in Kapture; resolve a second time when the closure is delivered again; leave the complaint open once the closure has been accepted; record a resolution the CSP did not perform as though they performed it. |
+| R1 | As a CSP, when Wiom has already closed my customer's ticket, I want the complaint closed on my behalf so that my card and my deadline stop, without me doing anything. | **(a)** On a Kapture-side closure of a partner-assigned Internet Issues ticket, resolve the open complaint, stamping the resolution at the moment the agent closed it in Kapture. **(b)** Resolve the matching restore execution candidate, to the same end state a CSP's own resolve produces. **(c)** Record the call-centre agent as the actor who resolved it, carrying that agent's own identity through from Kapture — never the CSP, and never a shared system identity. **(d)** Emit exactly one resolution signal for the fault. ⚠️ *AI GENERATED — review*. **(e)** Resolve the candidate even when the complaint has already reached a terminal state by another route — the card's life never depends on what the complaint's status happens to be. | Resolve a complaint whose ticket was not closed in Kapture; resolve a second time when the closure is delivered again; leave the complaint open once the closure has been accepted; leave a live card standing because the complaint was already terminal; record a resolution the CSP did not perform as though they performed it. |
 
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
@@ -38,6 +38,7 @@
 | AC-R1-2 | **Given** the closure in AC-R1-1, made by the Kapture agent whose employee id is 4417, **When** it is accepted at 09:20:23, **Then** the candidate reads `resolved_by_actor_type` = CC_AGENT and `resolved_by_actor_id` = 4417 — not the CSP a0b6v6, and not the shared system identity 137439087976. | R1c · R1 MUST NOT | Settled |
 | AC-R1-5 | **Given** a Kapture closure whose payload carries no closing-agent employee id, **When** it is accepted, **Then** the candidate reads `resolved_by_actor_type` = CC_AGENT with an empty `resolved_by_actor_id`, and it still does not read CSP. | R1c | Settled |
 | AC-R1-4 | **Given** the closure in AC-R1-1, **When** it is accepted at 09:20:23, **Then** exactly one resolution signal exists for complaint of ticket 1786508079949000, and `signal_emitted` reads true once. | R1d · G4 | Settled |
+| AC-R1-6 | **Given** a complaint already at `UNRESOLVABLE` with `unresolvable_reason` = MAX_ESCALATION_REACHED, whose restore candidate is still `PENDING_ACCEPTANCE` and `is_csp_actionable` = true, **When** a Wiom agent closes that ticket in Kapture, **Then** the complaint row is unchanged and no second resolution signal is emitted, and the candidate reads `state` = COMPLETED with the card showing ठीक है. | T9 · R1e · G2 · G4 | Settled |
 | AC-R1-3 | **Given** a ticket on the Wiom Net queue with `is_partnerassigned` = 0 and no row in `COMPLAINTS` for its `ticket_id`, **When** a Wiom agent closes it in Kapture, **Then** still no `COMPLAINTS` row exists for that `ticket_id` and no restore candidate was created. | R1 MUST NOT | Settled |
 
 ### R2 — The card says the work is done and asks only for acknowledgement
@@ -105,13 +106,18 @@ flowchart TD
     B -- "Yes" --> C{"Live complaint exists<br/>for this ticket?"}
     C -- "No" --> Z
     C -- "Yes" --> D{"Complaint already<br/>in a terminal state?"}
-    D -- "Yes" --> E["T5 — discard, no second resolution"]
+    D -- "Yes" --> D2{"Card still live?"}
+    D2 -- "Yes" --> E2["T9 — leave complaint, still retire the card"]
+    D2 -- "No" --> E["T5 — discard, nothing left to do"]
     D -- "No" --> F["T1 — resolve complaint at agent closure time"]
+    E2 --> H
     F --> G["T2 — resolve candidate, card becomes resolved-unacknowledged"]
     G --> H["T3 — notify the CSP"]
     H --> I{"CSP or assigned technician<br/>taps ठीक है?"}
     I -- "Yes" --> J["T4 — archive the card"]
-    I -- "No" --> K["T6 — card stays in the feed"]
+    I -- "No" --> K{"C-01 elapsed?"}
+    K -- "No" --> I
+    K -- "Yes" --> L["T6 — card auto-archives, unacknowledged"]
 ```
 
 **Precedence:** a CSP resolve and a Kapture closure landing at the same instant resolve by first arrival — whichever reaches SRS first takes effect as T1, and the second is discarded as T5 (AC-RACE-1).
@@ -126,10 +132,11 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 | T2 | PENDING_ACCEPTANCE · ACCEPTED · ASSIGNED_TECHNICIAN · IN_PROGRESS · AWAITING_VERIFICATION | T1 completed | — | COMPLETED (unacknowledged) | Candidate resolved, recording the call-centre agent and that agent's identity as the resolving actor (R1c); card becomes resolved-unacknowledged — active and actionable, update row added unread, home subtitle changed, deadline block replaced, ठीक है the only action (R2a–d, R4c); card raised in the feed (R2e). |
 | T3 | COMPLETED (unacknowledged) | T2 completed | CSP's own resolve was not the trigger | COMPLETED (unacknowledged) | Push notification sent (R3a), deep-linking to the drilldown (R3b). |
 | T4 | COMPLETED (unacknowledged) | CSP or assigned technician taps ठीक है | Actor owns the card or is its assigned technician | COMPLETED (archived) | Card leaves the feed and is retrievable in the archive (R4a); complaint untouched (R4 MUST NOT). |
-| T5 | COMPLETED · CANCELLED | Kapture closure accepted | Complaint already terminal | COMPLETED · CANCELLED | Closure discarded; no second resolution, no second signal, no notification (G4, R3 MUST NOT). |
+| T5 | COMPLETED (unacknowledged) · COMPLETED (archived) · CANCELLED | Kapture closure accepted | — | unchanged | Closure discarded; no second resolution, no second signal, no notification (G4, R3 MUST NOT). The card is already retired, so nothing is left to do. |
 | T6 | COMPLETED (unacknowledged) | C-01 elapses with no acknowledgement | — | COMPLETED (archived) | Card leaves the feed unacknowledged and is retrievable in the archive (R4d); complaint untouched. |
 | T7 ⚠️ *AI GENERATED — review* | COMPLETED (archived) | Kapture reopens the ticket within 48 h | — | (out of scope) | A fresh complaint and a fresh card are created by the existing reopen path; this candidate is untouched (§1 Boundary, AC-REG-3). |
 | T8 ⚠️ *AI GENERATED — review* | CANCELLED | Kapture closure accepted | — | CANCELLED | Not reachable as a change: a cancelled candidate is terminal, so the closure is discarded by T5. |
+| T9 | PENDING_ACCEPTANCE · ACCEPTED · ASSIGNED_TECHNICIAN · IN_PROGRESS · AWAITING_VERIFICATION | Kapture closure accepted | Complaint already terminal — UNRESOLVABLE, CLOSED or REDIRECTED — while the card is still live | COMPLETED (unacknowledged) | Complaint untouched: no second resolution and no second signal (G4). The candidate is resolved anyway and the card becomes resolved-unacknowledged (R1e, R2a–d), because a closed fault must never leave a live card standing (G2). |
 
 ---
 
@@ -153,6 +160,7 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 | AC-GRD-4 | **Given** one fault, **When** its ticket is closed in Kapture and the closure is delivered three times, **Then** exactly one complaint resolution and one resolution signal exist. | G4 · R1d | Settled |
 | AC-RACE-1 | **Given** a card at ACCEPTED, **When** the CSP taps Resolve at 09:20:23.100 and the agent's Kapture closure arrives at 09:20:23.400, **Then** the complaint carries `resolved_at` = 09:20:23.100 from the CSP's own resolve, the Kapture closure is discarded, and no ठीक है card or notification is produced. | T5 · R3 MUST NOT | Settled |
 | AC-DUP-1 | **Given** the closure from AC-R1-1 already accepted and the complaint CLOSED, **When** the same closure is delivered again, **Then** `resolved_at` is unchanged at 09:20:23, no second signal is emitted, and no second notification is sent. | T5 · G4 | Settled |
+| AC-DUP-3 | **Given** a candidate already at CANCELLED, **When** a Kapture closure for its ticket is delivered, **Then** the candidate stays CANCELLED, no card is produced and no notification is sent. | T8 · T5 · G4 | Settled |
 | AC-DUP-2 | **Given** the resolved, unacknowledged card, **When** the CSP taps ठीक है twice within one second, **Then** the card archives once and the second tap changes nothing. | T4 | Settled |
 | AC-BV-1 | **Given** the card resolved at 2026-08-12T09:20:23 and never acknowledged, **When** the CSP opens the feed at 2026-08-19T09:20:22 — one second inside C-01 (7 days) — **Then** the card is in the feed, active, still carrying ठीक है. | R4c · C-01 | Settled |
 | AC-BV-2 | **Given** the same unacknowledged card, **When** the CSP opens the feed at 2026-08-19T09:20:24 — one second past C-01 — **Then** the card is in the archive, not the feed. | R4d · C-01 | Settled |
@@ -228,7 +236,6 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 
 | Location (section · ID) | What was never asked |
 |---|---|
-| Header | Reviewer (eng lead), Support/Ops consulted party, TAS eng consulted party |
 | §2 · R3 | What the CSP sees if the notification never arrives — is the in-app card the sole guarantee? |
 | §2 · R2 | The English copy for the update row and the home subtitle. Only Hindi was supplied in the updated design. |
 
@@ -236,5 +243,5 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 
 | Rule overridden | What was done instead | Rationale | Approved by |
 |---|---|---|---|
-| Template §4 / J2 — a failure envelope must name a §5 window by whose expiry the outcome is guaranteed | AC-FAIL-1 states the outcome — a findable record naming the ticket and the agent's closure instant — with no window attached | PM removed both timing parameters: "C-01 and C-02 — remove these". The delivery path has no retry, so a window would have described a wait nobody implements; the record is what makes a dropped closure recoverable | Ashish Raj · 18 Sep 2026 |
+| Template §4 / J2 — a failure envelope must name a §5 window by whose expiry the outcome is guaranteed | AC-FAIL-1 states the outcome — a findable record naming the ticket and the agent's closure instant — with no window attached | PM removed both timing parameters that this document previously carried. The delivery path has no retry, so a window would have described a wait nobody implements; the record is what makes a dropped closure recoverable | Ashish Raj · 18 Sep 2026 |
 | §2 — copy must be true of the case it fires on | The supplied copy asserts "कस्टमर ने Wiom को बताया कि उनका नेट चल गया है" on **all** Kapture closures, while 59% (3,260/mo) are closed on "ping is up, customer not called" and only 2.5% (138/mo) are a customer actually saying it works | PM chose full coverage of the gap over per-case copy accuracy, and chose to keep the supplied copy unchanged, after being shown the split | Ashish Raj · 17 Sep 2026 |

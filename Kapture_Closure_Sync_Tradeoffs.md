@@ -51,10 +51,9 @@ the CSP, which is the point of keeping the card active at all.
 
 What remains open is the two window values, C-01 and C-02, and the terminal-complaint hole below.
 
-## Still open
+## Settled 18 Sep — the terminal-complaint hole
 
-**A terminal complaint with a live card.** T5 discards a closure when the complaint is already
-terminal, but the card can still be live — 11 today, 7 of them CSP-actionable, all against
-UNRESOLVABLE complaints. For those, the closure is discarded and the dead card this feature exists
-to kill stays exactly where it is, breaking G2 and G3. The fix is to discard the complaint
-resolution but still complete the candidate. Needs a decision.
+| # | Decision point | Chosen | Rejected options | Why | Date |
+|---|---|---|---|---|---|
+| 12 | A closure arriving for a complaint that is already terminal, while its card is still live | **Leave the complaint alone, but retire the card anyway.** New transition T9. | (a) Discard the whole closure, as T5 did — leaves the live card standing. (b) Resolve the complaint a second time — breaks G4 and double-signals Quality. | T5 assumed "complaint terminal" meant "card already dead". It does not: 11 cards sit live against UNRESOLVABLE complaints today, 7 of them CSP-actionable, because SRS gives up on a complaint (escalation exhausted, customer unreachable) without TAS retiring the card. Splitting the two halves keeps G4 intact and closes G2. | 18 Sep 2026 |
+| 13 | Timing windows for the notification and for a failed closure delivery | **Removed both.** | Keep them as Fixed parameters with values to be set. | "C-01 and C-02 — remove these." The delivery path has no retry, so a window would have described a wait nobody implements; AC-FAIL-1 keeps the envelope as a findable record instead of a deadline. Recorded as a template Override. | 18 Sep 2026 |
