@@ -3,13 +3,13 @@
 | | | | |
 |---|---|---|---|
 | **Owner** — Ashish Raj (PM) | **Reviewer** — [TBD — not asked] | **Status** — Draft | **Sign-off** — Pending |
-| **Version** — v0.7 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | **Consulted — Support/Ops** — [TBD — not asked] | **Consulted — TAS eng** — [TBD — not asked] |
+| **Version** — v0.8 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | **Consulted — Support/Ops** — [TBD — not asked] | **Consulted — TAS eng** — [TBD — not asked] |
 
 ---
 
 ## 1. Objective & Guardrails
 
-**Objective.** A CSP whose customer's fault Wiom has already closed learns it at once, is never sent to work a job that no longer exists, and is never marked late for a fault that was fixed on time.
+**Objective.** Once Wiom knows a customer is in pain no more, the ticket closes — Wiom does not wait on the CSP to mark it resolved, and does not penalise them for not marking it. The CSP is told at once, is never sent to a job that no longer exists, and is never recorded late for a fault that was fixed on time.
 
 **Boundary.** This spec governs a **Kapture-side closure of a partner-assigned Internet Issues ticket that still has a live SRS complaint** — the path that today reaches Ticket Service Java and stops there. It leaves unchanged: the CSP-initiated resolution path, which already works and reaches Kapture in about one second (AC-REG-1); the SHIFTING task family, which keeps today's behaviour entirely (AC-REG-2); the reopen model, where a reopened ticket still creates a fresh complaint with a fresh deadline (AC-REG-3); the connectivity-check verification path, which this spec neither calls nor changes (AC-REG-4); and the Quality resolution signal's payload, which gains no field and loses none, so Quality scores an agent-closed complaint exactly as it scores any other (AC-REG-5). It does change one thing outside itself: a resolved-unacknowledged card must render as active rather than greyed, so that ठीक है can be tapped (R4c). Every other card type keeps today's behaviour (AC-REG-6).
 
@@ -19,7 +19,7 @@
 |---|---|---|---|
 | G1 | **Never late for work done on time** (zero tolerance) | A CSP is never recorded as breaching a deadline for a fault Wiom closed before that deadline. | R1 · R5 · AC-R5-1 · AC-GRD-1 |
 | G2 | **A closed fault asks for nothing** | Once the complaint is resolved, the card offers no action that sends the CSP or a technician to the site. | R2 · AC-R2-2 · AC-GRD-2 |
-| G3 | **No complaint outlives its ticket** | When Kapture closes the ticket, the complaint reaches a terminal state without waiting for the CSP. | R1 · AC-R1-1 · AC-GRD-3 |
+| G3 | **Wiom never waits on a tap it does not need** | When Kapture closes the ticket, the complaint reaches a terminal state on its own — the CSP's acknowledgement is never what closes it. | R1 · R4 · AC-R1-1 · AC-WF-2 · AC-GRD-3 |
 | G4 | **One fault, one resolution** | A single fault produces one complaint resolution and one Quality signal, however many times the closure is delivered. | R1 · AC-DUP-1 · AC-GRD-4 |
 
 ---
@@ -138,7 +138,7 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
 | AC-WF-1 | **Given** ticket 1786508079949000 raised 09:17 with `sla_at` 15:00 and a card at PENDING_ACCEPTANCE, **When** the agent closes it in Kapture at 09:20:23 and the CSP taps ठीक है at 16:59, **Then** the complaint closed at 09:20:23, the ledger reads `resolved_within_tat` = true, no technician was ever dispatched, and the card sits in the archive. | T1 · T2 · T3 · T4 · G1 · G2 | Settled |
-| AC-WF-2 | **Given** the same ticket, **When** the agent closes it at 09:20:23 and the CSP never opens the app, **Then** the complaint is still CLOSED, the ledger still reads `resolved_within_tat` = true, and the CSP's score is unaffected by the missing acknowledgement. | T1 · T2 · T6 · G1 · G3 | Settled |
+| AC-WF-2 | **Given** the same ticket, **When** the agent closes it at 09:20:23 and the CSP never opens the app, **Then** the complaint is still CLOSED, the ledger still reads `resolved_within_tat` = true, and the CSP's score is unaffected by the missing acknowledgement — neither the closure nor the score ever depended on the tap. | T1 · T2 · T6 · G1 · G3 | Settled |
 | AC-WF-3 | **Given** a card at ASSIGNED_TECHNICIAN with technician T due on site, **When** the agent closes the ticket in Kapture, **Then** the card offers only ठीक है, and T has no action that sends them to the site. | T2 · G2 | Settled |
 | AC-FAIL-1 | **Given** a Kapture closure accepted at 09:20:23, **When** C-02 [TBD — not asked] has elapsed and the complaint is still not CLOSED, **Then** the closure is visible to Support/Ops as undelivered, carrying the ticket id and the agent's closure instant, so that the complaint can be closed against that instant rather than against the CSP. | R1a · C-02 · G1 | OPEN |
 | AC-REG-1 | **Given** a card at ACCEPTED whose complaint is open, **When** CSP a0b6v6 taps Resolve in the app at 11:00:00, **Then** the complaint's `resolved_at` is 11:00:00, the Kapture ticket reaches `is_resolved` = 1, and no ठीक है card and no push notification are produced for that ticket. | §1 Boundary | Settled |
