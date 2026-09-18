@@ -51,6 +51,13 @@ the CSP, which is the point of keeping the card active at all.
 
 What remains open is the two window values, C-01 and C-02, and the terminal-complaint hole below.
 
+## Settled 18 Sep — who holds the card, and who clears it
+
+| # | Decision point | Chosen | Rejected options | Why | Date |
+|---|---|---|---|---|---|
+| 14 | Whether one tap clears the card for everyone | **Each app clears its own card.** The owner's tap archives the owner's copy; the technician's archives theirs; neither waits on the other. | (a) Both must tap before it archives anywhere — leaves each person holding a card only somebody else can clear. (b) Either tap clears it for both, as the draft had it — the technician may never learn the job closed. | Acknowledgement is personal: it exists so each person sees Wiom acted. Costs a real extension — TAS holds acknowledgement once per candidate today (`ackedAttentionVersion` is a single value) and now needs it per person. | 18 Sep 2026 |
+| 15 | Who may acknowledge, and who is notified | **Owner, any manager on the account, and the assigned technician — all three hold the card, are notified, and can tap.** | (a) Owner only, matching today's OWNER→CSP mapping — a manager-run CSP could never clear its feed. (b) Owner and technician, managers excluded. | Managers run CSP accounts in practice. `ResolverActorType` maps only OWNER and TECHNICIAN and drops MANAGER / MANAGER_PLUS into OTHER, so this needs those roles recognised on the CSP side. | 18 Sep 2026 |
+
 ## Settled 18 Sep — the terminal-complaint hole
 
 | # | Decision point | Chosen | Rejected options | Why | Date |
