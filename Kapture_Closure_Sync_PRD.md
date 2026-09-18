@@ -3,7 +3,7 @@
 | | | | |
 |---|---|---|---|
 | **Owner** — Ashish Raj (PM) | **Reviewer** — [TBD — not asked] | **Status** — Draft | **Sign-off** — Pending |
-| **Version** — v0.4 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | **Consulted — Support/Ops** — [TBD — not asked] | **Consulted — TAS eng** — [TBD — not asked] |
+| **Version** — v0.5 · 18 Sep 2026 | **Consulted — Quality OS** — Akhil | **Consulted — Support/Ops** — [TBD — not asked] | **Consulted — TAS eng** — [TBD — not asked] |
 
 ---
 
@@ -77,7 +77,7 @@
 | AC-R4-2 | **Given** the same card with technician T assigned before the closure, **When** T taps ठीक है, **Then** the card archives exactly as in AC-R4-1. | R4b | Settled |
 | AC-R4-3 | **Given** the same card, **When** a CSP who does not own it opens it, **Then** ठीक है is not offered and the card does not archive. | R4b · R4 MUST NOT | Settled |
 | AC-R4-5 | **Given** the closure accepted at 09:20:23, **When** CSP a0b6v6 opens the feed at 09:21 without tapping ठीक है, **Then** the card is in the feed, not the archive. | R4c · R4 MUST NOT | Settled |
-| AC-R4-4 | **Given** the card resolved at 09:20:23 on 12 Aug and never acknowledged, **When** the CSP opens the feed on 20 Aug, **Then** `[CLARIFY: is the card still in the feed? Today the gateway's v2 inline window (C-01, 7 days) moves it to the archive on age alone, and C-02 (30 days) removes it entirely. "Stays until tapped, forever" cannot hold without changing both.]` | R4c · C-01 · C-02 | OPEN |
+| AC-R4-4 | **Given** the card resolved at 09:20:23 on 12 Aug and never acknowledged, **When** the CSP opens the feed on 20 Aug, **Then** `[CLARIFY: is the card still in the feed? Today the gateway's 7-day inline feed window moves it to the archive on age alone, and TAS's 30-day terminal retention removes it entirely (§6). "Stays until tapped, forever" cannot hold without changing both.]` | R4c · §6 TAS aggregation | OPEN |
 
 ### R5 — Quality scores the CSP at the moment the fault was fixed
 
@@ -122,7 +122,7 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 | ID | From | Action / Trigger | Rule / Check | To | Side-effects |
 |---|---|---|---|---|---|
 | T1 | PENDING_ACCEPTANCE · ACCEPTED · ASSIGNED_TECHNICIAN · IN_PROGRESS · AWAITING_VERIFICATION | Kapture closure accepted | Ticket partner-assigned, Internet Issues, complaint not terminal | (complaint CLOSED) | Complaint resolved with `resolved_at` = the agent's closure instant (R1a); one resolution signal emitted (R1d); scored against that instant (R5a). |
-| T2 | PENDING_ACCEPTANCE · ACCEPTED · ASSIGNED_TECHNICIAN · IN_PROGRESS · AWAITING_VERIFICATION | T1 completed | — | COMPLETED | Candidate resolved, recording the call-centre agent and that agent's identity as the resolving actor (R1c); card becomes resolved-unacknowledged — update row added unread, home subtitle changed, deadline block replaced, ठीक है the only action (R2a–d); card raised in the feed (R2e). |
+| T2 | PENDING_ACCEPTANCE · ACCEPTED · ASSIGNED_TECHNICIAN · IN_PROGRESS · AWAITING_VERIFICATION | T1 completed | — | COMPLETED (unacknowledged) | Candidate resolved, recording the call-centre agent and that agent's identity as the resolving actor (R1c); card becomes resolved-unacknowledged — update row added unread, home subtitle changed, deadline block replaced, ठीक है the only action (R2a–d); card raised in the feed (R2e). |
 | T3 | COMPLETED (unacknowledged) | T2 completed | CSP's own resolve was not the trigger | COMPLETED (unacknowledged) | Push notification sent within C-01 (R3a), deep-linking to the drilldown (R3b). |
 | T4 | COMPLETED (unacknowledged) | CSP or assigned technician taps ठीक है | Actor owns the card or is its assigned technician | COMPLETED (archived) | Card leaves the feed and is retrievable in the archive (R4a); complaint untouched (R4 MUST NOT). |
 | T5 | COMPLETED · CANCELLED | Kapture closure accepted | Complaint already terminal | COMPLETED · CANCELLED | Closure discarded; no second resolution, no second signal, no notification (G4, R3 MUST NOT). |
@@ -153,7 +153,7 @@ Lifecycle of a **restore execution candidate** (created by SRS when it classifie
 | AC-DUP-1 | **Given** the closure from AC-R1-1 already accepted and the complaint CLOSED, **When** the same closure is delivered again, **Then** `resolved_at` is unchanged at 09:20:23, no second signal is emitted, and no second notification is sent. | T5 · G4 | Settled |
 | AC-DUP-2 | **Given** the resolved, unacknowledged card, **When** the CSP taps ठीक है twice within one second, **Then** the card archives once and the second tap changes nothing. | T4 | Settled |
 | AC-BV-1 | **Given** the card resolved at 2026-08-12T09:20:23 and never acknowledged, **When** the CSP opens the feed at 2026-08-19T09:20:22 — one second inside the gateway's 7-day inline feed window (§6, TAS aggregation) — **Then** `[CLARIFY: is the card in the feed? This is the boundary AC-R4-4 turns on.]` | §6 TAS aggregation · R4c | OPEN |
-| AC-BV-2 | **Given** the same unacknowledged card, **When** the CSP opens the feed at 2026-08-19T09:20:24 — one second past that window — **Then** `[CLARIFY: feed or archive?]` | C-01 · R4c | OPEN |
+| AC-BV-2 | **Given** the same unacknowledged card, **When** the CSP opens the feed at 2026-08-19T09:20:24 — one second past that window — **Then** `[CLARIFY: feed or archive?]` | §6 TAS aggregation · R4c | OPEN |
 | AC-BV-3 | **Given** the same unacknowledged card, **When** the CSP opens the archive at 2026-09-11T09:20:24 — one second past TAS's 30-day terminal retention (§6) — **Then** `[CLARIFY: the card is gone from both surfaces; is an unacknowledged card allowed to disappear unacknowledged?]` | §6 TAS aggregation · R4c | OPEN |
 | AC-BV-4 | **Given** a CSP with zero other cards, **When** the agent's closure is accepted, **Then** the resolved-unacknowledged card is the only card in the feed and is first by definition. | R2e | Settled |
 
